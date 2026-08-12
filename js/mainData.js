@@ -164,40 +164,42 @@ async function handleSearch() {
     const { data, error } = await db
       .from('clients')
       .select('*')
-      .ilike('id', searchId)
-      .maybeSingle();
+      .eq('id', searchId);
 
     if (error) throw error;
 
-    if (!data) {
+    const foundClient = (data && data.length > 0) ? data[0] : null;
+
+    if (!foundClient) {
       messageEl.textContent = `لم يتم العثور على عميل بالرقم: ${searchId}`;
       messageEl.style.color = '#ef4444';
       return;
     }
 
-    messageEl.textContent = `تم العثور على العميل: ${data.client_name}`;
+    const dataObj = foundClient;
+    messageEl.textContent = `تم العثور على العميل: ${dataObj.client_name}`;
     messageEl.style.color = '#10b981';
 
     // Populate Form with found client data
-    document.getElementById('formCardTitle').textContent = `تعديل بيانات العميل (${data.id})`;
-    document.getElementById('id').value = data.id;
-    document.getElementById('booking_date').value = data.booking_date || '';
-    document.getElementById('delivery_date').value = data.delivery_date || '';
-    document.getElementById('client_name').value = data.client_name || '';
-    document.getElementById('whatsapp').value = data.whatsapp || '';
-    document.getElementById('source').value = data.source || 'WhatsApp';
-    document.getElementById('deal_owner').value = data.deal_owner || '';
-    document.getElementById('delivery_staff').value = data.delivery_staff || '';
-    document.getElementById('service_specs').value = data.service_specs || '';
-    document.getElementById('total_price').value = data.total_price || 0;
-    document.getElementById('paid').value = data.paid || 0;
-    document.getElementById('remaining').value = data.remaining || 0;
-    document.getElementById('delivery_status').value = data.delivery_status || 'لم تبدأ بعد';
-    document.getElementById('payment_status').value = data.payment_status || 'لم يتم استلام مبالغ';
+    document.getElementById('formCardTitle').textContent = `تعديل بيانات العميل (${dataObj.id})`;
+    document.getElementById('id').value = dataObj.id;
+    document.getElementById('booking_date').value = dataObj.booking_date || '';
+    document.getElementById('delivery_date').value = dataObj.delivery_date || '';
+    document.getElementById('client_name').value = dataObj.client_name || '';
+    document.getElementById('whatsapp').value = dataObj.whatsapp || '';
+    document.getElementById('source').value = dataObj.source || 'WhatsApp';
+    document.getElementById('deal_owner').value = dataObj.deal_owner || '';
+    document.getElementById('delivery_staff').value = dataObj.delivery_staff || '';
+    document.getElementById('service_specs').value = dataObj.service_specs || '';
+    document.getElementById('total_price').value = dataObj.total_price || 0;
+    document.getElementById('paid').value = dataObj.paid || 0;
+    document.getElementById('remaining').value = dataObj.remaining || 0;
+    document.getElementById('delivery_status').value = dataObj.delivery_status || 'لم تبدأ بعد';
+    document.getElementById('payment_status').value = dataObj.payment_status || 'لم يتم استلام مبالغ';
 
     // Update Services Chips & Tags
     selectedServices.clear();
-    const activeServices = (data.service_type || '').split(',').map(s => s.trim());
+    const activeServices = (dataObj.service_type || '').split(',').map(s => s.trim());
     activeServices.forEach(srv => {
       if (srv) selectedServices.add(srv);
     });
