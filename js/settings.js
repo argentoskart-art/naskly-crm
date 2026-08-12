@@ -162,3 +162,75 @@ async function deleteService(id, name) {
     alert('حدث خطأ أثناء الحذف: ' + err.message);
   }
 }
+
+// --- Email Reminder Settings ---
+document.addEventListener('DOMContentLoaded', () => {
+  const savedEmail = localStorage.getItem('reminder_recipient_email') || 'nsqlycorp@gmail.com';
+  const emailInput = document.getElementById('reminderEmailInput');
+  if (emailInput) emailInput.value = savedEmail;
+
+  const saveEmailBtn = document.getElementById('saveEmailBtn');
+  if (saveEmailBtn) {
+    saveEmailBtn.addEventListener('click', () => {
+      const email = document.getElementById('reminderEmailInput').value.trim();
+      if (!email) return alert('يرجى كتابة البريد الإلكتروني');
+      localStorage.setItem('reminder_recipient_email', email);
+      alert('تم حفظ بريد الإشعارات بنجاح!');
+    });
+  }
+
+  const sendEmailNowBtn = document.getElementById('sendEmailNowBtn');
+  if (sendEmailNowBtn) {
+    sendEmailNowBtn.addEventListener('click', handleSendReminderEmailNow);
+  }
+});
+
+async function handleSendReminderEmailNow() {
+  const statusMsg = document.getElementById('emailStatusMsg');
+  const targetEmail = localStorage.getItem('reminder_recipient_email') || 'nsqlycorp@gmail.com';
+  
+  statusMsg.style.color = '#F7C01B';
+  statusMsg.textContent = 'جاري التجميع وتجهيز إيميل التذكير...';
+
+  try {
+    const { data: clients, error } = await db
+      .from('clients')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Filter for tomorrow's delivery date and open status
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+
+    const openStatuses = ['لم تبدأ بعد', 'جزئي'];
+    const matchingRows = (clients || []).filter(c => {
+      return c.delivery_date === tomorrowStr && openStatuses.includes(c.delivery_status);
+    });
+
+    // Send Mail via mailto fallback client trigger with HTML report
+    const subject = encodeURIComponent('تنويه: عملاء موعد تسليمهم غدا - Naskly CRM');
+    
+    let reportText = `تنويه: هذه قائمة بالعملاء ميعاد تسليمهم غدا (${tomorrowStr}) وحالتهم مازالت مفتوحة:\n\n`;
+    if (matchingRows.length === 0) {
+      reportText += 'لا يوجد عملاء يستحقون التذكير غداً.\n';
+    } else {
+      matchingRows.forEach((item, idx) => {
+        reportText += `${idx + 1}. ID: ${item.id} | العميل: ${item.client_name} | الواتساب: ${item.whatsapp} | الحالة: ${item.delivery_status} | المتبقي: ${item.remaining} ج.م\n`;
+      });
+    }
+
+    const mailtoUrl = `mailto:${targetEmail}?subject=${subject}&body=${encodeURIComponent(reportText)}`;
+    window.location.href = mailtoUrl;
+
+    statusMsg.style.color = '#4ade80';
+    statusMsg.textContent = `تم تجهيز تقرير التذكير لـ (${matchingRows.length}) عملاء وتسليمه لبريد: ${targetEmail}`;
+
+  } catch (err) {
+    console.error('Email error:', err);
+    statusMsg.style.color = '#ef4444';
+    statusMsg.textContent = 'حدث خطأ أثناء إعداد الإشعار!';
+  }
+}
