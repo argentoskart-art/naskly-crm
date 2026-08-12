@@ -1,8 +1,4 @@
-// Client Auth Check & Hashed Verification
-
-// Pre-hashed SHA-256 values:
-// username "admin" -> "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
-// password "Mohand@1234" -> "a96a1fb090c2941df3c1535eb0ee6c3ff5c1bfd67568853b0c804f85e49efb66"
+// Client Auth Check & Cryptographic SHA-256 Hashed Verification
 const TARGET_USER_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918";
 const TARGET_PASS_HASH = "a96a1fb090c2941df3c1535eb0ee6c3ff5c1bfd67568853b0c804f85e49efb66";
 
@@ -38,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const userHash = await hashString(userVal);
       const passHash = await hashString(passVal);
 
-      if ((userVal === 'admin' && passVal === 'Mohand@1234') || (userHash === TARGET_USER_HASH && passHash === TARGET_PASS_HASH)) {
+      if (userHash === TARGET_USER_HASH && passHash === TARGET_PASS_HASH) {
         sessionStorage.setItem('naskly_auth_session', 'authenticated_user_' + Date.now());
         window.location.href = 'index.html';
       } else {
