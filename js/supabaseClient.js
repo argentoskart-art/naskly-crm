@@ -3,12 +3,24 @@
 const SUPABASE_URL = 'https://veaxrryzxmvngtwpwfko.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlYXhycnl6eG12bmd0d3B3ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDcxNTcsImV4cCI6MjEwMjEyMzE1N30.KcekxUbaBMMaPMR_prGfx6a3IeySu-FpM5n-bb2mcug';
 
-// Attach initialized client to global window scope safely
-if (!window._supabaseDb) {
-  window._supabaseDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Standard Supabase v2 CDN global instance getter
+function getSupabaseClient() {
+  if (window._supabaseInstance) return window._supabaseInstance;
+  const createFn = (window.supabase && window.supabase.createClient) || (window.Supabase && window.Supabase.createClient);
+  if (typeof createFn === 'function') {
+    window._supabaseInstance = createFn(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return window._supabaseInstance;
+  }
+  return null;
 }
 
-var supabase = window._supabaseDb;
+const supabase = {
+  from: (table) => {
+    const client = getSupabaseClient();
+    if (!client) throw new Error('Supabase SDK لم يتم تحميله بعد في المتصفح!');
+    return client.from(table);
+  }
+};
 
 /**
  * Generate Next Auto ID (N001, N002, etc.)
