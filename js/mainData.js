@@ -46,28 +46,48 @@ async function initForm() {
     deliveryStaffSelect.innerHTML += `<option value="${member}">${member}</option>`;
   });
 
-  // Populate Services Chips
-  const serviceChipsContainer = document.getElementById('serviceChips');
-  serviceChipsContainer.innerHTML = '';
-  bootstrap.services.forEach(service => {
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.textContent = service;
-    chip.addEventListener('click', () => {
-      if (selectedServices.has(service)) {
-        selectedServices.delete(service);
-        chip.classList.remove('selected');
-      } else {
-        selectedServices.add(service);
-        chip.classList.add('selected');
-      }
-    });
-    serviceChipsContainer.appendChild(chip);
-  });
+  // Attach click events to initial static chips or dynamic ones
+  setupServiceChips(bootstrap.services);
 
   // Generate initial Auto ID
   const nextId = await generateNextClientId();
   document.getElementById('id').value = nextId;
+}
+
+function setupServiceChips(servicesList) {
+  const serviceChipsContainer = document.getElementById('serviceChips');
+  
+  if (servicesList && servicesList.length > 0) {
+    serviceChipsContainer.innerHTML = '';
+    servicesList.forEach(service => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.textContent = service;
+      serviceChipsContainer.appendChild(chip);
+    });
+  }
+
+  // Bind click listener on all chips in the container
+  document.querySelectorAll('#serviceChips .chip').forEach(chip => {
+    // Clone to remove duplicate listeners
+    const newChip = chip.cloneNode(true);
+    chip.parentNode.replaceChild(newChip, chip);
+
+    const serviceName = newChip.textContent.trim();
+    if (selectedServices.has(serviceName)) {
+      newChip.classList.add('selected');
+    }
+
+    newChip.addEventListener('click', () => {
+      if (selectedServices.has(serviceName)) {
+        selectedServices.delete(serviceName);
+        newChip.classList.remove('selected');
+      } else {
+        selectedServices.add(serviceName);
+        newChip.classList.add('selected');
+      }
+    });
+  });
 }
 
 function calculateRemaining() {
