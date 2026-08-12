@@ -1,0 +1,56 @@
+﻿const TEAM_SHEET_NAME = 'ادارة الفريق';
+
+const TEAM_HEADERS = [
+  'أسماء الموظفين',
+  'الدور الوظيفي',
+  'الراتب الشهري',
+  'العمولة عن كل عميل',
+];
+
+const TEAM_ROWS = [
+  ['محمود علي', 'خدمة عملاء', '', ''],
+  ['مهند محمد', 'تسليم عملاء', '', ''],
+];
+
+function createTeamOnly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(TEAM_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(TEAM_SHEET_NAME);
+  } else {
+    sheet.clear();
+    sheet.clearFormats();
+    sheet.clearNotes();
+  }
+
+  sheet.getRange(1, 1, 1, TEAM_HEADERS.length).setValues([TEAM_HEADERS]);
+  sheet.getRange(2, 1, TEAM_ROWS.length, TEAM_HEADERS.length).setValues(TEAM_ROWS);
+
+  sheet.setFrozenRows(1);
+  sheet.setRowHeight(1, 34);
+  sheet.setColumnWidths(1, TEAM_HEADERS.length, 180);
+
+  sheet.getRange(1, 1, 1, TEAM_HEADERS.length)
+    .setBackground('#1F4E78')
+    .setFontColor('#FFFFFF')
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+
+  sheet.getRange(2, 1, TEAM_ROWS.length, TEAM_HEADERS.length)
+    .setBackground('#F7FBFF')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+
+  sheet.getRange('C2:D').setNumberFormat('#,##0.00');
+  sheet.getRange(1, 1, TEAM_ROWS.length + 1, TEAM_HEADERS.length).setWrap(true);
+  sheet.getRange(1, 1, TEAM_ROWS.length + 1, TEAM_HEADERS.length).createFilter();
+}
+
+function addTeamMenu() {
+  SpreadsheetApp.getUi()
+    .createMenu('CRM Setup')
+    .addItem('Create Team Sheet', 'createTeamOnly')
+    .addToUi();
+}

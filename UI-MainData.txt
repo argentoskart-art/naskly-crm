@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_top">
+  <title>MainData CRM</title>
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            palette: {
+              green: '#337A55',
+              'green-dark': '#265C3F',
+              gold: '#F7C01B',
+              'gold-dark': '#C9990D',
+              orange: '#EA7C25',
+              'orange-dark': '#C55F11',
+              navy: '#283849',
+              'navy-dark': '#1B2735',
+              'navy-light': '#364A5F',
+              ice: '#ECF1F4',
+              'ice-muted': '#B0C2D0'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #1B2735;
+      color: #ECF1F4;
+    }
+    .glass-card {
+      background: rgba(40, 56, 73, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(236, 241, 244, 0.1);
+    }
+    .glass-card-hover {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(247, 192, 27, 0.4);
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1B2735;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #364A5F;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #F7C01B;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12 antialiased selection:bg-palette-gold selection:text-palette-navy-dark">
+
+  <div class="mx-auto max-w-7xl p-4 sm:p-6 space-y-6">
+
+    <!-- Top Card / Header -->
+    <div class="glass-card rounded-3xl overflow-hidden shadow-2xl border border-palette-navy-light/60">
+      
+      <!-- Top Title & Logo Row -->
+      <div class="bg-palette-navy-dark/95 border-b border-palette-navy-light/60 p-6">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <img id="logoImg" class="h-14 w-auto object-contain hidden" alt="Nsqly Logo" src="">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-palette-green via-palette-gold to-palette-orange flex items-center justify-center shadow-lg shadow-palette-green/20 text-palette-navy-dark shrink-0">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-extrabold text-palette-ice">Nsqly MainData CRM</h1>
+              <p class="text-xs text-palette-ice-muted">إدارة بيانات العملاء والخدمات والمدفوعات</p>
+            </div>
+          </div>
+
+          <!-- Top Status Quick Filter Buttons -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="showStatus('لم تبدأ بعد')" class="px-4 py-2 rounded-xl bg-palette-orange/20 hover:bg-palette-orange/30 text-palette-orange border border-palette-orange/40 text-xs font-bold whitespace-nowrap transition">
+              لم تبدأ بعد
+            </button>
+            <button onclick="showStatus('جزئي')" class="px-4 py-2 rounded-xl bg-palette-gold/20 hover:bg-palette-gold/30 text-palette-gold border border-palette-gold/40 text-xs font-bold whitespace-nowrap transition">
+              جزئي
+            </button>
+            <button onclick="showStatus('تم بالكامل')" class="px-4 py-2 rounded-xl bg-palette-green/20 hover:bg-palette-green/30 text-palette-green border border-palette-green/40 text-xs font-bold whitespace-nowrap transition">
+              تم بالكامل
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search ID Bar -->
+      <div class="p-5 bg-palette-navy/70 border-b border-palette-navy-light/60">
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          <div class="relative flex-1 w-full">
+            <input id="searchId" type="text" placeholder="ابحث بالرقم التعريفي مثل N001..." 
+              class="w-full bg-palette-navy-dark border border-palette-navy-light focus:border-palette-gold focus:ring-1 focus:ring-palette-gold text-palette-ice text-sm rounded-xl px-4 py-3 pr-10 outline-none transition">
+            <svg class="w-4 h-4 text-palette-ice-muted absolute right-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <button onclick="searchById()" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-palette-green hover:bg-palette-green-dark text-palette-ice text-sm font-bold shadow-md shadow-palette-green/20 whitespace-nowrap transition">
+            بحث عن عميل 🔍
+          </button>
+        </div>
+      </div>
+
+      <!-- Customer Form Body -->
+      <div class="p-6 space-y-6">
+
+        <!-- Form Section 1: Basic Info -->
+        <section class="glass-card rounded-2xl p-5 space-y-4 border border-palette-navy-light/60">
+          <div class="flex items-center gap-2 pb-3 border-b border-palette-navy-light/60">
+            <span class="w-2.5 h-2.5 rounded-full bg-palette-gold"></span>
+            <h3 class="text-base font-bold text-palette-ice">بيانات العميل والتواصل</h3>
+          </div>
+          <div id="customerFields" class="grid gap-4 md:grid-cols-2"></div>
+        </section>
+
+        <!-- Form Section 2: Work & Services -->
+        <section class="glass-card rounded-2xl p-5 space-y-4 border border-palette-navy-light/60">
+          <div class="flex items-center gap-2 pb-3 border-b border-palette-navy-light/60">
+            <span class="w-2.5 h-2.5 rounded-full bg-palette-green"></span>
+            <h3 class="text-base font-bold text-palette-ice">بيانات الخدمة والمواعيد</h3>
+          </div>
+          <div id="workFields" class="grid gap-4 md:grid-cols-2"></div>
+        </section>
+
+        <!-- Form Section 3: Financials & Statuses -->
+        <section class="glass-card rounded-2xl p-5 space-y-4 border border-palette-navy-light/60">
+          <div class="flex items-center gap-2 pb-3 border-b border-palette-navy-light/60">
+            <span class="w-2.5 h-2.5 rounded-full bg-palette-orange"></span>
+            <h3 class="text-base font-bold text-palette-ice">الحسابات والمالية والحالات</h3>
+          </div>
+          <div id="paymentFields" class="grid gap-4 md:grid-cols-2"></div>
+        </section>
+
+        <!-- Form Buttons -->
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button onclick="saveRecord()" class="px-6 py-3 rounded-xl bg-palette-green hover:bg-palette-green-dark text-palette-ice font-bold text-sm shadow-md shadow-palette-green/30 whitespace-nowrap transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            حفظ البيانات
+          </button>
+          <button onclick="clearForm()" class="px-6 py-3 rounded-xl bg-palette-navy-dark hover:bg-palette-navy-light border border-palette-navy-light text-palette-ice-muted hover:text-palette-ice font-bold text-sm whitespace-nowrap transition">
+            عميل جديد ↺
+          </button>
+        </div>
+
+        <!-- Status Message Banner -->
+        <div id="message" class="text-sm font-semibold text-palette-gold min-h-6"></div>
+
+      </div>
+
+      <!-- Results Table View Section -->
+      <div class="border-t border-palette-navy-light/60 bg-palette-navy-dark/95 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-palette-ice flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-palette-gold"></span>
+            نتائج البحث والتصفية
+          </h2>
+          <span id="resultsHint" class="text-xs text-palette-ice-muted font-medium">لم يتم البحث بعد</span>
+        </div>
+
+        <div id="results" class="glass-card rounded-2xl overflow-hidden border border-palette-navy-light/60">
+          <div class="p-6 text-center text-sm text-palette-ice-muted">ابحث باستخدام الرقم التعريفي أو اضغط تصفية لمشاهدة النتائج.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const state = {
+      fields: [],
+      options: { statuses: [], sources: [], teams: [], services: [] },
+      record: {}
+    };
+
+    const baseInput = 'w-full bg-palette-navy-dark border border-palette-navy-light focus:border-palette-gold focus:ring-1 focus:ring-palette-gold text-palette-ice text-sm rounded-xl px-3.5 py-2.5 outline-none transition';
+    const labelCls = 'mb-1.5 block text-xs font-semibold text-palette-ice-muted whitespace-nowrap';
+    const fieldWrap = 'space-y-1';
+
+    function setMessage(text) { 
+      const msgEl = document.getElementById('message');
+      if (msgEl) msgEl.textContent = text || ''; 
+    }
+
+    function setLoading(on) {
+      document.body.classList.toggle('opacity-75', !!on);
+      document.body.classList.toggle('pointer-events-none', !!on);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getFieldOptions(field) {
+      if (field.options) return field.options;
+      if (field.optionsSource === 'team') return state.options.teams || [];
+      if (field.optionsSource === 'services') return state.options.services || [];
+      return [];
+    }
+
+    function getMultiValues(key) {
+      const raw = state.record[key];
+      if (Array.isArray(raw)) return raw.filter(Boolean);
+      return String(raw || '').split(',').map(v => v.trim()).filter(Boolean);
+    }
+
+    function setMultiValues(key, values) {
+      state.record[key] = values.filter(Boolean);
+      const text = document.getElementById(key + '__text');
+      if (text) text.value = values.join(', ');
+      const hidden = document.getElementById(key + '__hidden');
+      if (hidden) hidden.value = values.join(', ');
+      const chips = document.getElementById(key + '__chips');
+      if (chips) chips.innerHTML = renderChipsHtml(key, values);
+      const query = document.getElementById(key + '__query');
+      if (query) query.value = '';
+      const panel = document.getElementById(key + '__panel');
+      if (panel) panel.classList.add('hidden');
+    }
+
+    function renderChipsHtml(key, values) {
+      if (!values.length) return '<span class="text-xs text-palette-ice-muted">لم يتم اختيار أي خدمة بعد</span>';
+      return values.map(v => `
+        <span class="inline-flex items-center gap-2 rounded-lg bg-palette-green/20 border border-palette-green/40 px-3 py-1 text-xs font-semibold text-palette-green whitespace-nowrap">
+          <span>${escapeHtml(v)}</span>
+          <button type="button" class="multi-remove text-palette-orange hover:text-palette-gold text-base leading-none" data-key="${key}" data-value="${escapeHtml(v)}">×</button>
+        </span>
+      `).join('');
+    }
+
+    function removeMultiValue(key, value) {
+      const values = getMultiValues(key).filter(v => v !== value);
+      setMultiValues(key, values);
+      state.record[key] = values;
+    }
+
+    function filterServices(query) {
+      const q = String(query || '').trim().toLowerCase();
+      return getFieldOptions({ optionsSource: 'services' }).filter(item => item.toLowerCase().includes(q));
+    }
+
+    function openMultiPanel(key) {
+      const panel = document.getElementById(key + '__panel');
+      if (panel) panel.classList.remove('hidden');
+      const query = document.getElementById(key + '__query');
+      if (query) query.focus();
+    }
+
+    function renderMultiSelectField(field) {
+      const values = getMultiValues(field.key);
+      const chips = renderChipsHtml(field.key, values);
+      const label = `<label class="${labelCls}">${field.label}</label>`;
+      return `
+        <div class="${fieldWrap} md:col-span-2 relative">
+          ${label}
+          <div class="space-y-3 rounded-2xl border border-palette-navy-light/60 bg-palette-navy-dark/90 p-3.5">
+            <div class="space-y-2">
+              <div class="text-xs font-medium text-palette-ice-muted">الخدمات المختارة:</div>
+              <div class="flex flex-wrap gap-2" id="${field.key}__chips">${chips}</div>
+            </div>
+            <input id="${field.key}__text" type="hidden" value="${escapeHtml(values.join(', '))}">
+            <input id="${field.key}__hidden" type="hidden" value="${escapeHtml(values.join(', '))}">
+            <input id="${field.key}__query" class="${baseInput}" type="text" placeholder="اكتب للبحث في قائمة الخدمات..." oninput="updateMultiSuggestions('${field.key}', this.value)" onclick="openMultiPanel('${field.key}')" autocomplete="off">
+            <div id="${field.key}__panel" class="hidden rounded-xl border border-palette-navy-light/60 bg-palette-navy p-2 shadow-xl">
+              <div class="mb-2 text-xs font-semibold text-palette-gold">قائمة الخدمات المتاحة:</div>
+              <div id="${field.key}__list" class="space-y-1 max-h-48 overflow-auto"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateMultiSuggestions(key, query) {
+      const list = document.getElementById(key + '__list');
+      const panel = document.getElementById(key + '__panel');
+      const selected = getMultiValues(key);
+      const matches = filterServices(query).filter(item => !selected.includes(item));
+      if (!panel) return;
+      panel.classList.remove('hidden');
+      if (!matches.length) {
+        list.innerHTML = '<div class="px-3 py-2 text-xs text-palette-ice-muted">لا توجد نتائج متطابقة.</div>';
+        return;
+      }
+      list.innerHTML = matches.map(item => `
+        <button type="button" class="service-option w-full rounded-lg px-3 py-2 text-right text-xs font-semibold text-palette-ice hover:bg-palette-navy-light transition whitespace-nowrap" data-key="${key}" data-value="${escapeHtml(item)}">
+          ${escapeHtml(item)}
+        </button>
+      `).join('');
+      attachServiceOptionHandlers();
+    }
+
+    function pickMultiValue(key, value) {
+      const values = getMultiValues(key);
+      if (!values.includes(value)) values.push(value);
+      setMultiValues(key, values);
+      state.record[key] = values;
+      const query = document.getElementById(key + '__query');
+      if (query) query.focus();
+      updateMultiSuggestions(key, query ? query.value : '');
+    }
+
+    function attachServiceOptionHandlers() {
+      document.querySelectorAll('.service-option').forEach(btn => {
+        if (btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('mousedown', ev => ev.preventDefault());
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.key;
+          const value = btn.dataset.value;
+          if (key && value) pickMultiValue(key, value);
+        });
+      });
+      document.querySelectorAll('.multi-remove').forEach(btn => {
+        if (btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('mousedown', ev => ev.preventDefault());
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.key;
+          const value = btn.dataset.value;
+          if (key && value) removeMultiValue(key, value);
+        });
+      });
+    }
+
+    function renderField(field) {
+      const value = state.record[field.key] ?? '';
+      const label = `<label class="${labelCls}" for="${field.key}">${field.label}</label>`;
+      if (field.readonly) return `<div class="${fieldWrap}">${label}<input id="${field.key}" class="${baseInput} opacity-70 cursor-not-allowed" type="text" value="${escapeHtml(value)}" readonly></div>`;
+      if (field.type === 'date') return `<div class="${fieldWrap}">${label}<input id="${field.key}" class="${baseInput}" type="date" value="${escapeHtml(value)}"></div>`;
+      if (field.type === 'number') return `<div class="${fieldWrap}">${label}<input id="${field.key}" class="${baseInput}" type="number" step="0.01" value="${escapeHtml(value)}"></div>`;
+      if (field.type === 'multi-select') return renderMultiSelectField(field);
+      if (field.type === 'select') {
+        const opts = getFieldOptions(field).map(opt => `<option value="${escapeHtml(opt)}" ${String(opt) === String(value) ? 'selected' : ''}>${escapeHtml(opt)}</option>`).join('');
+        return `<div class="${fieldWrap}">${label}<select id="${field.key}" class="${baseInput}"><option value="">-- اختر --</option>${opts}</select></div>`;
+      }
+      if (field.key === 'serviceSpecs') return `<div class="space-y-1 md:col-span-2">${label}<textarea id="${field.key}" class="${baseInput} min-h-24 resize-y">${escapeHtml(value)}</textarea></div>`;
+      return `<div class="${fieldWrap}">${label}<input id="${field.key}" class="${baseInput}" type="text" value="${escapeHtml(value)}"></div>`;
+    }
+
+    function getSectionForField(field) {
+      if (['id', 'clientName', 'whatsapp', 'source'].includes(field.key)) return 'customerFields';
+      if (['bookingDate', 'deliveryDate', 'dealOwner', 'deliveryStaff', 'serviceType', 'serviceSpecs'].includes(field.key)) return 'workFields';
+      if (['totalPrice', 'paid', 'remaining', 'deliveryStatus', 'paymentStatus'].includes(field.key)) return 'paymentFields';
+      return 'workFields';
+    }
+
+    function renderForm() {
+      const buckets = { customerFields: [], workFields: [], paymentFields: [] };
+      state.fields.forEach(field => {
+        buckets[getSectionForField(field)].push(renderField(field));
+      });
+      document.getElementById('customerFields').innerHTML = buckets.customerFields.join('');
+      document.getElementById('workFields').innerHTML = buckets.workFields.join('');
+      document.getElementById('paymentFields').innerHTML = buckets.paymentFields.join('');
+      state.fields.forEach(field => {
+        const el = document.getElementById(field.key);
+        if (!el || field.readonly) return;
+        if (field.type === 'multi-select') return;
+        el.addEventListener('input', () => state.record[field.key] = el.value);
+        el.addEventListener('change', () => state.record[field.key] = el.value);
+      });
+      attachServiceOptionHandlers();
+    }
+
+    function fillForm(record) {
+      state.record = Object.assign({
+        id: '', bookingDate: '', deliveryDate: '', clientName: '', whatsapp: '', source: '',
+        dealOwner: '', deliveryStaff: '', serviceType: [], serviceSpecs: '', totalPrice: '',
+        paid: '', remaining: '', deliveryStatus: '', paymentStatus: '', row: ''
+      }, record || {});
+      renderForm();
+      state.fields.forEach(field => {
+        const el = document.getElementById(field.key);
+        if (!el) return;
+        if (field.type === 'multi-select') {
+          setMultiValues(field.key, getMultiValues(field.key));
+        } else {
+          el.value = state.record[field.key] ?? '';
+        }
+      });
+      document.getElementById('searchId').value = state.record.id || '';
+    }
+
+    function syncFormToState() {
+      state.fields.forEach(field => {
+        const el = document.getElementById(field.key);
+        if (!el) return;
+        if (field.type === 'multi-select') {
+          state.record[field.key] = getMultiValues(field.key);
+        } else {
+          state.record[field.key] = el.value;
+        }
+      });
+    }
+
+    function clearForm() {
+      fillForm({});
+      setMessage('تم تجهيز النموذج لإضافة عميل جديد.');
+      document.getElementById('results').innerHTML = '<div class="p-6 text-center text-sm text-palette-ice-muted">جاهز لإضافة عميل جديد.</div>';
+      document.getElementById('resultsHint').textContent = 'لم يتم البحث بعد.';
+    }
+
+    function searchById() {
+      const id = document.getElementById('searchId').value.trim();
+      if (!id) { setMessage('يرجى إدخال الرقم التعريفي أولاً.'); return; }
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(res => {
+          setLoading(false);
+          if (!res || !res.found) {
+            setMessage('لم يتم العثور على عميل بهذا الرقم التعريفي.');
+            document.getElementById('results').innerHTML = '<div class="p-6 text-center text-sm text-palette-ice-muted">لا توجد نتائج تطابق هذا الرقم.</div>';
+            document.getElementById('resultsHint').textContent = 'لا توجد نتائج.';
+            return;
+          }
+          fillForm(res.record);
+          setMessage(`تم تحميل بيانات العميل ${res.record.id} بنجاح.`);
+          renderSingleResult(res.record);
+          document.getElementById('resultsHint').textContent = 'نتيجة البحث الحالية.';
+        })
+        .withFailureHandler(err => {
+          setLoading(false);
+          setMessage(err.message || String(err));
+        })
+        .searchCustomerById(id);
+    }
+
+    function showStatus(status) {
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(rows => {
+          setLoading(false);
+          renderStatusResults(status, rows || []);
+          setMessage(`عرض العملاء بالحالة: ${status}`);
+          document.getElementById('resultsHint').textContent = `تصفية بحسب الحالة: ${status}`;
+        })
+        .withFailureHandler(err => {
+          setLoading(false);
+          setMessage(err.message || String(err));
+        })
+        .getCustomersByStatus(status);
+    }
+
+    function saveRecord() {
+      syncFormToState();
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(res => {
+          setLoading(false);
+          if (!res || !res.ok) {
+            setMessage('فشل حفظ البيانات.');
+            return;
+          }
+          state.record.id = res.id;
+          state.record.row = res.row || state.record.row;
+          fillForm(state.record);
+          setMessage(res.isNew ? `تم حفظ العميل الجديد ${res.id} بنجاح.` : `تم تحديث بيانات العميل ${res.id} بنجاح.`);
+        })
+        .withFailureHandler(err => {
+          setLoading(false);
+          setMessage(err.message || String(err));
+        })
+        .saveCustomerRecord(state.record);
+    }
+
+    function renderSingleResult(record) { renderResultsTable([record]); }
+    function renderStatusResults(status, rows) { renderResultsTable(rows); }
+
+    function renderResultsTable(rows) {
+      if (!rows || !rows.length) {
+        document.getElementById('results').innerHTML = '<div class="p-6 text-center text-sm text-palette-ice-muted">لا توجد بيانات مطابقة.</div>';
+        return;
+      }
+      const headers = ['ID', 'تاريخ الحجز', 'تاريخ الاستلام', 'اسم العميل', 'الواتساب', 'المصدر', 'مسؤول الديل', 'موظف التسليم', 'الخدمات', 'المواصفات', 'إجمالي السعر', 'المدفوع', 'المتبقي', 'حالة التسليم', 'حالة المدفوعات'];
+      const body = rows.map(r => {
+        const waText = r.whatsapp ? String(r.whatsapp).trim() : '';
+        const waClean = waText.replace(/\D/g, '');
+        const waButton = waText ? 
+          `<a href="https://wa.me/${waClean.startsWith('2') ? waClean : (waClean.length === 10 || waClean.length === 11 ? '20' + waClean : waClean)}" target="_blank" class="inline-flex items-center gap-1 text-palette-green hover:text-palette-gold font-mono text-xs dir-ltr whitespace-nowrap font-semibold">
+            <span>${escapeHtml(waText)}</span>
+          </a>` 
+          : `<span class="text-palette-ice-muted">-</span>`;
+
+        let delBadge = "bg-palette-navy-dark text-palette-ice-muted border-palette-navy-light";
+        if (String(r.deliveryStatus).includes('تم') || String(r.deliveryStatus).includes('كامل')) {
+          delBadge = "bg-palette-green/20 text-palette-green border-palette-green/40";
+        } else if (String(r.deliveryStatus).includes('جزئي')) {
+          delBadge = "bg-palette-gold/20 text-palette-gold border-palette-gold/40";
+        }
+
+        let payBadge = "bg-palette-orange/20 text-palette-orange border-palette-orange/40";
+        if (String(r.paymentStatus).includes('تم') || String(r.paymentStatus).includes('كامل')) {
+          payBadge = "bg-palette-green/20 text-palette-green border-palette-green/40";
+        } else if (String(r.paymentStatus).includes('جزئي')) {
+          payBadge = "bg-palette-gold/20 text-palette-gold border-palette-gold/40";
+        }
+
+        return `
+          <tr class="hover:bg-palette-navy-light/40 border-b border-palette-navy-light/40 transition">
+            <td class="px-4 py-3.5 font-bold text-palette-gold font-mono whitespace-nowrap">${escapeHtml(r.id)}</td>
+            <td class="px-4 py-3.5 whitespace-nowrap text-palette-ice-muted">${escapeHtml(r.bookingDate)}</td>
+            <td class="px-4 py-3.5 whitespace-nowrap text-palette-ice-muted">${escapeHtml(r.deliveryDate)}</td>
+            <td class="px-4 py-3.5 font-semibold text-palette-ice whitespace-nowrap">${escapeHtml(r.clientName)}</td>
+            <td class="px-4 py-3.5 whitespace-nowrap">${waButton}</td>
+            <td class="px-4 py-3.5 whitespace-nowrap"><span class="px-2 py-0.5 rounded bg-palette-navy-dark text-palette-ice text-xs border border-palette-navy-light/60">${escapeHtml(r.source)}</span></td>
+            <td class="px-4 py-3.5 whitespace-nowrap text-palette-ice-muted">${escapeHtml(r.dealOwner)}</td>
+            <td class="px-4 py-3.5 whitespace-nowrap text-palette-ice-muted">${escapeHtml(r.deliveryStaff)}</td>
+            <td class="px-4 py-3.5 text-palette-ice-muted max-w-xs truncate" title="${escapeHtml(Array.isArray(r.serviceType) ? r.serviceType.join(', ') : r.serviceType)}">${escapeHtml(Array.isArray(r.serviceType) ? r.serviceType.join(', ') : r.serviceType)}</td>
+            <td class="px-4 py-3.5 text-palette-ice-muted max-w-xs truncate" title="${escapeHtml(r.serviceSpecs)}">${escapeHtml(r.serviceSpecs)}</td>
+            <td class="px-4 py-3.5 font-bold text-palette-ice whitespace-nowrap">${escapeHtml(r.totalPrice)}</td>
+            <td class="px-4 py-3.5 text-palette-green whitespace-nowrap">${escapeHtml(r.paid)}</td>
+            <td class="px-4 py-3.5 text-palette-orange whitespace-nowrap">${escapeHtml(r.remaining)}</td>
+            <td class="px-4 py-3.5 whitespace-nowrap"><span class="inline-block px-3 py-1 rounded-full border text-xs font-semibold whitespace-nowrap ${delBadge}">${escapeHtml(r.deliveryStatus)}</span></td>
+            <td class="px-4 py-3.5 whitespace-nowrap"><span class="inline-block px-3 py-1 rounded-full border text-xs font-semibold whitespace-nowrap ${payBadge}">${escapeHtml(r.paymentStatus)}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('results').innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-right text-sm min-w-[1000px]">
+            <thead class="bg-palette-navy-dark text-palette-ice text-xs uppercase font-bold tracking-wider border-b border-palette-navy-light/60">
+              <tr>${headers.map(h => `<th class="px-4 py-3.5 whitespace-nowrap">${h}</th>`).join('')}</tr>
+            </thead>
+            <tbody class="divide-y divide-palette-navy-light/40 text-sm">${body}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function boot() {
+      setLoading(true);
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(data => {
+            setLoading(false);
+            state.fields = data.fields || [];
+            state.options.statuses = data.statuses || [];
+            state.options.sources = data.sources || [];
+            state.options.teams = data.teams || [];
+            state.options.services = data.services || [];
+            if (data.logoDataUrl) {
+              const img = document.getElementById('logoImg');
+              img.src = data.logoDataUrl;
+              img.classList.remove('hidden');
+            }
+            fillForm({});
+            setMessage('جاهز للنظام. ابحث بالرقم التعريفي أو أضف عميلاً جديداً.');
+          })
+          .withFailureHandler(err => {
+            setLoading(false);
+            setMessage(err.message || String(err));
+          })
+          .getMainDataBootstrap();
+      } else {
+        setTimeout(() => {
+          setLoading(false);
+          state.fields = [
+            { key: 'id', label: 'الرقم التعريفي', col: 1, type: 'text', readonly: true },
+            { key: 'bookingDate', label: 'تاريخ الحجز', col: 2, type: 'date' },
+            { key: 'deliveryDate', label: 'تاريخ الاستلام', col: 3, type: 'date' },
+            { key: 'clientName', label: 'اسم العميل', col: 4, type: 'text' },
+            { key: 'whatsapp', label: 'رقم الواتساب', col: 5, type: 'text' },
+            { key: 'source', label: 'مصدر العميل', col: 6, type: 'select', options: ['WhatsApp', 'FaceBook'] },
+            { key: 'dealOwner', label: 'الموظف المسؤول عن الديل', col: 7, type: 'select', optionsSource: 'team' },
+            { key: 'deliveryStaff', label: 'موظف التسليم', col: 8, type: 'select', optionsSource: 'team' },
+            { key: 'serviceType', label: 'نوع الخدمة المقدمة', col: 9, type: 'multi-select', optionsSource: 'services' },
+            { key: 'serviceSpecs', label: 'مواصفات الخدمة', col: 10, type: 'text' },
+            { key: 'totalPrice', label: 'السعر الإجمالي للخدمة', col: 11, type: 'number' },
+            { key: 'paid', label: 'المدفوع', col: 12, type: 'number' },
+            { key: 'remaining', label: 'المتبقي', col: 13, type: 'number' },
+            { key: 'deliveryStatus', label: 'حالة التسليم', col: 14, type: 'select', options: ['لم تبدأ بعد', 'جزئي', 'تم بالكامل'] },
+            { key: 'paymentStatus', label: 'حالة المدفوعات', col: 15, type: 'select', options: ['لم يتم استلام مبالغ', 'جزئي', 'تم بالكامل'] },
+          ];
+          state.options = {
+            statuses: ['لم تبدأ بعد', 'جزئي', 'تم بالكامل'],
+            sources: ['WhatsApp', 'FaceBook'],
+            teams: ['مهند محمد', 'محمود علي', 'سمير محمد'],
+            services: ['المعاصر 1 ثانوي', 'باقة 800 سلايد', 'الوحدة 2 و 3 ثانوي']
+          };
+          fillForm({});
+          setMessage('معاينة الواجهة جاهزة.');
+        }, 300);
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

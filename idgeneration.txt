@@ -1,0 +1,83 @@
+﻿const ID_MAIN_SHEET_NAME = 'MainData';
+const ID_PREFIX = 'N';
+const ID_START_ROW = 3;
+
+/**
+ * Install this function as an on edit trigger.
+ * It assigns an ID only after the required MainData fields are filled.
+ */
+function handleMainDataIdGeneration(e) {
+  if (!e || !e.range) return;
+
+  const sheet = e.range.getSheet();
+  if (sheet.getName() !== ID_MAIN_SHEET_NAME) return;
+
+  const row = e.range.getRow();
+  if (row < ID_START_ROW) return;
+
+  const idCell = sheet.getRange(row, 1);
+  if (String(idCell.getValue()).trim() !== '') return;
+
+  if (!isRowReadyForId_(sheet, row)) return;
+
+  const nextId = getNextIdNumber_(sheet);
+  idCell.setValue(`${ID_PREFIX}${String(nextId).padStart(3, '0')}`);
+}
+
+function isRowReadyForId_(sheet, row) {
+  // Required fields before generating an ID:
+  // B date, D client name, E whatsapp, F source, G responsible employee,
+  // H delivery employee, I service, J specs
+  const requiredColumns = [2, 4, 5, 6, 7, 8, 9, 10];
+
+  return requiredColumns.every(col => {
+    const value = sheet.getRange(row, col).getValue();
+    return value !== '' && value !== null;
+  });
+}
+
+function getNextIdNumber_(sheet) {
+  const lastRow = Math.max(sheet.getLastRow(), ID_START_ROW);
+  const values = sheet.getRange(ID_START_ROW, 1, lastRow - ID_START_ROW + 1, 1).getValues().flat();
+
+  let maxNumber = 0;
+  values.forEach(value => {
+    if (typeof value === 'string') {
+      const match = value.trim().match(/^N(\d+)$/i);
+      if (match) {
+        maxNumber = Math.max(maxNumber, parseInt(match[1], 10));
+      }
+    }
+  });
+
+  return maxNumber + 1;
+}
+
+function createIdTriggerInstructions() {
+  SpreadsheetApp.getUi().alert(
+    'Create an installable on edit trigger for handleMainDataIdGeneration so it runs automatically on MainData edits.'
+  );
+}
+
+function createMainDataIdTrigger() {
+  const ss = SpreadsheetApp.getActive();
+
+  // Remove older duplicate triggers for the same handler before creating a fresh one.
+  ScriptApp.getProjectTriggers().forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'handleMainDataIdGeneration') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  ScriptApp.newTrigger('handleMainDataIdGeneration')
+    .forSpreadsheet(ss)
+    .onEdit()
+    .create();
+}
+
+function addIdMenu() {
+  SpreadsheetApp.getUi()
+    .createMenu('CRM Setup')
+    .addItem('Create ID Trigger', 'createMainDataIdTrigger')
+    .addToUi();
+}

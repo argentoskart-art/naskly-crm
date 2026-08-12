@@ -1,0 +1,476 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_top">
+  <title>MainData CRM</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --ink: #17324d;
+      --muted: #6b7a90;
+      --brand: #1f4e78;
+      --brand-2: #2d6a9f;
+      --line: #d9e3ef;
+      --soft: #eef4fa;
+      --good: #2d7d46;
+      --warn: #9a6b00;
+      --bad: #b42318;
+      --shadow: 0 10px 30px rgba(31, 78, 120, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #eef4fb 0%, #f7f9fc 100%);
+      color: var(--ink);
+    }
+    .wrap {
+      padding: 16px;
+    }
+    .hero {
+      background: radial-gradient(circle at top right, rgba(45,106,159,.16), transparent 36%),
+                  linear-gradient(135deg, #ffffff 0%, #edf4fb 100%);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .hero-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 16px 8px;
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      background: #fff;
+      flex: 0 0 auto;
+    }
+    .title h1 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--brand);
+    }
+    .title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 12px 16px 16px;
+      border-top: 1px solid rgba(217,227,239,.6);
+    }
+    .searchRow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    input, select, textarea, button {
+      font: inherit;
+    }
+    .field {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+    .field:focus {
+      border-color: var(--brand-2);
+      box-shadow: 0 0 0 3px rgba(45,106,159,.12);
+    }
+    .searchField {
+      min-width: 180px;
+      flex: 1 1 180px;
+    }
+    .btnRow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+      color: #fff;
+      background: var(--brand);
+      box-shadow: 0 8px 20px rgba(31, 78, 120, 0.18);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn.secondary { background: #50657c; }
+    .btn.good { background: var(--good); }
+    .btn.warn { background: var(--warn); }
+    .btn.bad { background: var(--bad); }
+    .btn.ghost {
+      background: #fff;
+      color: var(--brand);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+    .section {
+      margin-top: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .sectionHead {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .sectionHead h2 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--brand);
+    }
+    .sectionHead .hint {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+    .full { grid-column: 1 / -1; }
+    .label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    textarea.field { min-height: 88px; resize: vertical; }
+    .statusGrid {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 0 16px 16px;
+    }
+    .results {
+      padding: 0 16px 16px;
+      max-height: 340px;
+      overflow: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #fff;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: right;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+    th { position: sticky; top: 0; background: #f8fbfe; z-index: 1; }
+    .muted { color: var(--muted); }
+    .msg {
+      padding: 0 16px 16px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 20px;
+    }
+    .loading { opacity: .7; pointer-events: none; }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+      .btnRow { justify-content: stretch; }
+      .btnRow .btn { flex: 1 1 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-top">
+        <img class="logo" src="https://drive.google.com/uc?export=view&id=1KoCHc90j54EysJEY2pQ1AI0qCfFPbgaN" alt="Logo">
+        <div class="title">
+          <h1>MainData Customer Manager</h1>
+          <p>Add, search, update, and review customers in the MainData sheet.</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="searchRow">
+          <input id="searchId" class="field searchField" type="text" placeholder="Search by ID like N001">
+          <button class="btn ghost" onclick="searchById()">Search ID</button>
+        </div>
+        <div class="btnRow">
+          <button class="btn good" onclick="showStatus('لم تبدأ بعد')">لم تبدأ بعد</button>
+          <button class="btn warn" onclick="showStatus('جزئي')">جزئي</button>
+          <button class="btn secondary" onclick="showStatus('تم بالكامل')">تم بالكامل</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectionHead">
+        <h2>Customer Form</h2>
+        <div class="hint">Fill the fields and press Save. Search by ID to edit an existing row.</div>
+      </div>
+      <div class="grid" id="formGrid"></div>
+      <div class="statusGrid">
+        <button class="btn" onclick="saveRecord()">Save</button>
+        <button class="btn ghost" onclick="clearForm()">New Customer</button>
+      </div>
+      <div class="msg" id="message"></div>
+    </div>
+
+    <div class="section">
+      <div class="sectionHead">
+        <h2>Results</h2>
+        <div class="hint" id="resultsHint">No search yet.</div>
+      </div>
+      <div class="results" id="results"></div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      fields: [],
+      options: { statuses: [], sources: [], teams: [], services: [] },
+      record: {},
+      currentId: '',
+    };
+
+    function setMessage(text) {
+      document.getElementById('message').textContent = text || '';
+    }
+
+    function setLoading(on) {
+      document.body.classList.toggle('loading', !!on);
+    }
+
+    function fieldHtml(field) {
+      const value = state.record[field.key] ?? '';
+      const label = `<label class="label" for="${field.key}">${field.label}</label>`;
+      if (field.readonly) {
+        return `<div>${label}<input id="${field.key}" class="field" type="text" value="${escapeHtml(value)}" readonly></div>`;
+      }
+      if (field.type === 'date') {
+        return `<div>${label}<input id="${field.key}" class="field" type="date" value="${escapeHtml(value)}"></div>`;
+      }
+      if (field.type === 'number') {
+        return `<div>${label}<input id="${field.key}" class="field" type="number" step="0.01" value="${escapeHtml(value)}"></div>`;
+      }
+      if (field.type === 'select') {
+        const opts = getFieldOptions(field).map(opt => `<option value="${escapeHtml(opt)}" ${opt === value ? 'selected' : ''}>${escapeHtml(opt)}</option>`).join('');
+        return `<div>${label}<select id="${field.key}" class="field"><option value="">-- choose --</option>${opts}</select></div>`;
+      }
+      return `<div class="${field.key === 'serviceSpecs' ? 'full' : ''}">${label}<${field.key === 'serviceSpecs' ? 'textarea' : 'input'} id="${field.key}" class="field" ${field.key === 'serviceSpecs' ? '' : 'type="text"'}>${field.key === 'serviceSpecs' ? escapeHtml(value) : ''}</${field.key === 'serviceSpecs' ? 'textarea' : 'input'}></div>`;
+    }
+
+    function getFieldOptions(field) {
+      if (field.options) return field.options;
+      if (field.optionsSource === 'team') return state.options.teams || [];
+      if (field.optionsSource === 'services') return state.options.services || [];
+      return [];
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderForm() {
+      const html = state.fields.map(fieldHtml).join('');
+      document.getElementById('formGrid').innerHTML = html;
+      state.fields.forEach(field => {
+        const el = document.getElementById(field.key);
+        if (el && !field.readonly) {
+          el.addEventListener('input', () => {
+            state.record[field.key] = el.value;
+          });
+          el.addEventListener('change', () => {
+            state.record[field.key] = el.value;
+          });
+        }
+      });
+    }
+
+    function syncFormToState() {
+      state.fields.forEach(field => {
+        const el = document.getElementById(field.key);
+        if (el) state.record[field.key] = el.value;
+      });
+    }
+
+    function fillForm(record) {
+      state.record = Object.assign({
+        id: '', bookingDate: '', deliveryDate: '', clientName: '', whatsapp: '', source: '',
+        dealOwner: '', deliveryStaff: '', serviceType: '', serviceSpecs: '', totalPrice: '',
+        paid: '', remaining: '', deliveryStatus: '', paymentStatus: ''
+      }, record || {});
+      renderForm();
+      state.fields.forEach(field => {
+        const el = document.getElementById(field.key);
+        if (el) el.value = state.record[field.key] ?? '';
+      });
+      document.getElementById('searchId').value = state.record.id || '';
+    }
+
+    function clearForm() {
+      fillForm({});
+      setMessage('Ready for a new customer.');
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('resultsHint').textContent = 'No search yet.';
+    }
+
+    function searchById() {
+      const id = document.getElementById('searchId').value.trim();
+      if (!id) {
+        setMessage('Enter an ID first.');
+        return;
+      }
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(res => {
+          setLoading(false);
+          if (!res || !res.found) {
+            setMessage('No customer found for that ID.');
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('resultsHint').textContent = 'Nothing found.';
+            return;
+          }
+          fillForm(res.record);
+          setMessage(`Loaded ${res.record.id} for editing.`);
+          renderSingleResult(res.record);
+          document.getElementById('resultsHint').textContent = 'Search result.';
+        })
+        .withFailureHandler(err => {
+          setLoading(false);
+          setMessage(err.message || String(err));
+        })
+        .searchCustomerById(id);
+    }
+
+    function showStatus(status) {
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(rows => {
+          setLoading(false);
+          renderStatusResults(status, rows || []);
+          setMessage(`Showing customers with status: ${status}`);
+          document.getElementById('resultsHint').textContent = `Status filter: ${status}`;
+        })
+        .withFailureHandler(err => {
+          setLoading(false);
+          setMessage(err.message || String(err));
+        })
+        .getCustomersByStatus(status);
+    }
+
+    function saveRecord() {
+      syncFormToState();
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(res => {
+          setLoading(false);
+          if (!res || !res.ok) {
+            setMessage('Save failed.');
+            return;
+          }
+          state.record.id = res.id;
+          fillForm(state.record);
+          setMessage(res.isNew ? `Saved new customer ${res.id}.` : `Updated customer ${res.id}.`);
+        })
+        .withFailureHandler(err => {
+          setLoading(false);
+          setMessage(err.message || String(err));
+        })
+        .saveCustomerRecord(state.record);
+    }
+
+    function renderSingleResult(record) {
+      const rows = [record];
+      renderResultsTable(rows);
+    }
+
+    function renderStatusResults(status, rows) {
+      renderResultsTable(rows);
+    }
+
+    function renderResultsTable(rows) {
+      if (!rows || !rows.length) {
+        document.getElementById('results').innerHTML = '<div class="muted">No matching customers.</div>';
+        return;
+      }
+      const headers = ['ID', 'Booking', 'Delivery', 'Client', 'WhatsApp', 'Source', 'Deal Owner', 'Delivery Staff', 'Service', 'Specs', 'Total', 'Paid', 'Remaining', 'Delivery Status', 'Payment Status'];
+      const body = rows.map(r => `
+        <tr>
+          <td>${escapeHtml(r.id)}</td>
+          <td>${escapeHtml(r.bookingDate)}</td>
+          <td>${escapeHtml(r.deliveryDate)}</td>
+          <td>${escapeHtml(r.clientName)}</td>
+          <td>${escapeHtml(r.whatsapp)}</td>
+          <td>${escapeHtml(r.source)}</td>
+          <td>${escapeHtml(r.dealOwner)}</td>
+          <td>${escapeHtml(r.deliveryStaff)}</td>
+          <td>${escapeHtml(r.serviceType)}</td>
+          <td>${escapeHtml(r.serviceSpecs)}</td>
+          <td>${escapeHtml(r.totalPrice)}</td>
+          <td>${escapeHtml(r.paid)}</td>
+          <td>${escapeHtml(r.remaining)}</td>
+          <td>${escapeHtml(r.deliveryStatus)}</td>
+          <td>${escapeHtml(r.paymentStatus)}</td>
+        </tr>
+      `).join('');
+      document.getElementById('results').innerHTML = `
+        <table>
+          <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      `;
+    }
+
+    function boot() {
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(data => {
+          setLoading(false);
+          state.fields = data.fields || [];
+          state.options.statuses = data.statuses || [];
+          state.options.sources = data.sources || [];
+          state.options.teams = data.teams || [];
+          state.options.services = data.services || [];
+          fillForm({});
+          setMessage('Ready. Search by ID or add a new customer.');
+        })
+        .withFailureHandler(err => {
+          setLoading(false);
+          setMessage(err.message || String(err));
+        })
+        .getMainDataBootstrap();
+    }
+
+    boot();
+  </script>
+</body>
+</html>

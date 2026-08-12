@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدخال بيانات العملاء | Naskly CRM</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="brand">
+      <img src="logo_small.png" alt="Naskly Logo" onerror="this.style.display='none'">
+      <h1>Naskly CRM</h1>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn active">إدخال وبحث العملاء</a>
+      <a href="dashboard.html" class="nav-btn">لوحة التحكم والشبكة</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    
+    <!-- Search Bar Section -->
+    <div class="card">
+      <div class="card-title">البحث عن عميل بالرقم التعريفي (ID)</div>
+      <div style="display: flex; gap: 12px; max-width: 500px;">
+        <input type="text" id="searchInput" class="form-control" placeholder="أدخل الرقم التعريفي مثل N001...">
+        <button id="searchBtn" class="btn btn-primary">بحث</button>
+      </div>
+      <div id="searchMessage" style="margin-top: 10px; font-weight: 600;"></div>
+    </div>
+
+    <!-- Client Form -->
+    <div class="card">
+      <div class="card-title" id="formCardTitle">إضافة / تعديل بيانات عميل</div>
+      <form id="clientForm">
+        <div class="form-grid">
+          
+          <div class="form-group">
+            <label>الرقم التعريفي (ID)</label>
+            <input type="text" id="id" class="form-control" readonly placeholder="سيتم توليده تلقائياً">
+          </div>
+
+          <div class="form-group">
+            <label>تاريخ الحجز</label>
+            <input type="date" id="booking_date" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>تاريخ الاستلام</label>
+            <input type="date" id="delivery_date" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>اسم العميل *</label>
+            <input type="text" id="client_name" class="form-control" required placeholder="اسم العميل الرباعي">
+          </div>
+
+          <div class="form-group">
+            <label>رقم الواتساب *</label>
+            <input type="text" id="whatsapp" class="form-control" required placeholder="01xxxxxxxxx">
+          </div>
+
+          <div class="form-group">
+            <label>مصدر العميل</label>
+            <select id="source" class="form-control">
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="FaceBook">FaceBook</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>الموظف المسؤول عن الديل</label>
+            <select id="deal_owner" class="form-control"></select>
+          </div>
+
+          <div class="form-group">
+            <label>موظف التسليم</label>
+            <select id="delivery_staff" class="form-control"></select>
+          </div>
+
+          <div class="form-group" style="grid-column: span 2;">
+            <label>نوع الخدمة المقدمة (يمكن اختيار أكثر من خدمة)</label>
+            <div id="serviceChips" class="chip-container"></div>
+          </div>
+
+          <div class="form-group" style="grid-column: span 2;">
+            <label>مواصفات الخدمة</label>
+            <textarea id="service_specs" class="form-control" rows="2" placeholder="مواصفات وتفاصيل الخدمة المطلوبة..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>السعر الإجمالي للخدمة</label>
+            <input type="number" id="total_price" class="form-control" min="0" step="0.01" value="0">
+          </div>
+
+          <div class="form-group">
+            <label>المدفوع</label>
+            <input type="number" id="paid" class="form-control" min="0" step="0.01" value="0">
+          </div>
+
+          <div class="form-group">
+            <label>المتبقي</label>
+            <input type="number" id="remaining" class="form-control" readonly value="0">
+          </div>
+
+          <div class="form-group">
+            <label>حالة التسليم</label>
+            <select id="delivery_status" class="form-control">
+              <option value="لم تبدأ بعد">لم تبدأ بعد</option>
+              <option value="جزئي">جزئي</option>
+              <option value="تم بالكامل">تم بالكامل</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>حالة المدفوعات</label>
+            <select id="payment_status" class="form-control">
+              <option value="لم يتم استلام مبالغ">لم يتم استلام مبالغ</option>
+              <option value="جزئي">جزئي</option>
+              <option value="تم بالكامل">تم بالكامل</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 12px;">
+          <button type="submit" id="saveBtn" class="btn btn-primary">حفظ البيانات</button>
+          <button type="button" id="resetBtn" class="btn btn-secondary">إعادة ضبط Form</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/mainData.js"></script>
+</body>
+</html>

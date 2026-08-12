@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم والشبكة | Naskly CRM</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="brand">
+      <img src="logo_small.png" alt="Naskly Logo" onerror="this.style.display='none'">
+      <h1>Naskly CRM</h1>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn">إدخال وبحث العملاء</a>
+      <a href="dashboard.html" class="nav-btn active">لوحة التحكم والشبكة</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- KPI Statistics Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="title">إجمالي العملاء</div>
+        <div class="value" id="kpiTotalClients">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">إجمالي الإيرادات</div>
+        <div class="value" id="kpiTotalRevenue">0.00 ج.م</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">إجمالي التحصيلات (المدفوع)</div>
+        <div class="value" id="kpiTotalPaid">0.00 ج.م</div>
+      </div>
+      <div class="kpi-card">
+        <div class="title">إجمالي المتبقي (المستحقات)</div>
+        <div class="value" style="color: #ef4444;" id="kpiTotalRemaining">0.00 ج.م</div>
+      </div>
+    </div>
+
+    <!-- Filter & GridView Section -->
+    <div class="card">
+      <div class="card-title">جدول بيانات العملاء (Grid View)</div>
+      
+      <!-- Filters Bar -->
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 1.25rem;">
+        <input type="text" id="gridSearchInput" class="form-control" placeholder="بحث بالاسم أو ID أو التليفون..." style="max-width: 280px;">
+        
+        <select id="filterDeliveryStatus" class="form-control" style="max-width: 180px;">
+          <option value="">جميع حالات التسليم</option>
+          <option value="لم تبدأ بعد">لم تبدأ بعد</option>
+          <option value="جزئي">جزئي</option>
+          <option value="تم بالكامل">تم بالكامل</option>
+        </select>
+
+        <select id="filterPaymentStatus" class="form-control" style="max-width: 180px;">
+          <option value="">جميع حالات المدفوعات</option>
+          <option value="لم يتم استلام مبالغ">لم يتم استلام مبالغ</option>
+          <option value="جزئي">جزئي</option>
+          <option value="تم بالكامل">تم بالكامل</option>
+        </select>
+
+        <button id="exportCsvBtn" class="btn btn-secondary" style="margin-right: auto;">تصدير CSV</button>
+      </div>
+
+      <!-- Data Table -->
+      <div class="table-responsive">
+        <table class="table" id="clientsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>اسم العميل</th>
+              <th>الواتساب</th>
+              <th>المسؤول</th>
+              <th>الخدمة</th>
+              <th>تاريخ الاستلام</th>
+              <th>السعر الإجمالي</th>
+              <th>المدفوع</th>
+              <th>المتبقي</th>
+              <th>حالة التسليم</th>
+              <th>حالة المدفوعات</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="gridTbody">
+            <tr>
+              <td colspan="12" style="text-align: center; color: var(--text-muted); padding: 20px;">جاري تحميل البيانات...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

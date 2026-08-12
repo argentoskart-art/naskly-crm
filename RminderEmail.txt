@@ -1,0 +1,179 @@
+const REMINDER_SPREADSHEET_ID = '1NQgOnxdCXSlPjDU-hmYUOA2kINd1MgnX3OsgwFpfH8A';
+const REMINDER_MAIN_SHEET_NAME = 'MainData';
+const REMINDER_START_ROW = 3;
+const REMINDER_LOGO_FILE_ID = '1FCotweW1r30F-275wwteCdoqsWX3XWNY';
+const REMINDER_RECIPIENT = 'nsqlycorp@gmail.com';
+
+function sendTomorrowDeliveryReminderEmail() {
+  const rows = getTomorrowDeliveryReminderRows_();
+  const subject = 'تنويه: عملاء موعد تسليمهم غدا';
+  const htmlBody = buildReminderEmailHtml_(rows);
+  const plainBody = buildReminderPlainText_(rows);
+
+  MailApp.sendEmail({
+    to: REMINDER_RECIPIENT,
+    subject: subject,
+    body: plainBody,
+    htmlBody: htmlBody,
+  });
+
+  return { ok: true, count: rows.length, recipient: REMINDER_RECIPIENT, subject: subject };
+}
+
+function getTomorrowDeliveryReminderRows_() {
+  const sheet = SpreadsheetApp.openById(REMINDER_SPREADSHEET_ID).getSheetByName(REMINDER_MAIN_SHEET_NAME);
+  if (!sheet) throw new Error('MainData sheet not found');
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < REMINDER_START_ROW) return [];
+
+  const values = sheet.getRange(REMINDER_START_ROW, 1, lastRow - REMINDER_START_ROW + 1, 15).getValues();
+  const tomorrowKey = Utilities.formatDate(addDays_(new Date(), 1), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const openStatuses = new Set(['لم تبدأ بعد', 'جزئي']);
+  const rows = [];
+
+  values.forEach((row, index) => {
+    const deliveryDate = toIsoDate_(row[2]);
+    const deliveryStatus = String(row[13] || '').trim();
+    if (deliveryDate === tomorrowKey && openStatuses.has(deliveryStatus)) {
+      rows.push({
+        rowNumber: REMINDER_START_ROW + index,
+        id: row[0] || '',
+        clientName: row[3] || '',
+        deliveryDate: deliveryDate,
+        deliveryStatus: deliveryStatus,
+        whatsapp: row[4] || '',
+        totalPrice: row[10] || '',
+        paid: row[11] || '',
+        remaining: row[12] || '',
+        paymentStatus: row[14] || '',
+      });
+    }
+  });
+
+  return rows;
+}
+
+function buildReminderEmailHtml_(rows) {
+  const logoDataUrl = getReminderLogoDataUrl_();
+  const today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const displayRows = rows.slice(0, 20);
+  const extraCount = Math.max(0, rows.length - displayRows.length);
+
+  const rowsHtml = displayRows.length
+    ? displayRows.map((item, index) => `
+      <tr>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${index + 1}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.id)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.clientName)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.deliveryDate)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.deliveryStatus)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.whatsapp)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.totalPrice)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.paid)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.remaining)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${escapeHtml_(item.paymentStatus)}</td>
+      </tr>
+    `).join('')
+    : `
+      <tr>
+        <td colspan="10" style="padding:16px;text-align:center;color:#6b7280;">لا يوجد عملاء يستحقون التذكير غدا</td>
+      </tr>
+    `;
+
+  return `
+    <html>
+      <body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial, Helvetica, sans-serif;color:#0f172a;">
+        <div style="max-width:920px;margin:0 auto;padding:20px;">
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:18px;overflow:hidden;">
+            <div style="padding:24px 20px 16px;text-align:center;background:linear-gradient(180deg,#ffffff 0%,#eef5fb 100%);border-bottom:1px solid #e5e7eb;">
+              <img src="${logoDataUrl}" alt="Nsqly logo" style="max-width:180px;width:100%;height:auto;display:block;margin:0 auto 10px auto;object-fit:contain;">
+              <div style="font-size:28px;font-weight:700;color:#1f4e78;">Nsqly CRM</div>
+            </div>
+            <div style="padding:20px;">
+              <div style="font-size:18px;font-weight:700;color:#1f4e78;margin-bottom:10px;">تنويه</div>
+              <div style="font-size:15px;line-height:1.8;color:#334155;margin-bottom:14px;">
+                هذه قائمة بالعملاء ميعاد تسليمهم غدا وحالتهم مازالت مفتوحه يرجي اتخاذ اللازم.
+              </div>
+              <div style="font-size:13px;color:#64748b;margin-bottom:14px;">تاريخ الإرسال: ${escapeHtml_(today)}</div>
+              <div style="overflow-x:auto;border:1px solid #e5e7eb;border-radius:12px;">
+                <table style="width:100%;border-collapse:collapse;font-size:13px;text-align:right;min-width:760px;">
+                  <thead>
+                    <tr style="background:#f8fafc;color:#1e293b;">
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">#</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">ID</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">اسم العميل</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">تاريخ الاستلام</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">حالة التسليم</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">رقم الواتساب</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">السعر الإجمالي</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">المدفوع</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">المتبقي</th>
+                      <th style="padding:8px;border-bottom:1px solid #e5e7eb;">حالة المدفوعات</th>
+                    </tr>
+                  </thead>
+                  <tbody>${rowsHtml}</tbody>
+                </table>
+              </div>
+              ${extraCount > 0 ? `<div style="margin-top:10px;font-size:12px;color:#64748b;">تم عرض أول ${displayRows.length} نتيجة فقط. يوجد ${extraCount} نتيجة إضافية.</div>` : ''}
+              <div style="margin-top:14px;font-size:14px;color:#334155;">تنويه هذه قائمة بالعملاء ميعاد تسليمهم غدا وحالته مازالت مفتوحه يرجي اتخاذ اللازم</div>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function buildReminderPlainText_(rows) {
+  const displayRows = rows.slice(0, 20);
+  const lines = [
+    'تنويه: هذه قائمة بالعملاء ميعاد تسليمهم غدا وحالتهم مازالت مفتوحه يرجي اتخاذ اللازم.',
+    ''
+  ];
+
+  if (!displayRows.length) {
+    lines.push('لا يوجد عملاء يستحقون التذكير غدا.');
+    return lines.join('\n');
+  }
+
+  displayRows.forEach((item, index) => {
+    lines.push(
+      `${index + 1}. ID: ${item.id} | الاسم: ${item.clientName} | الاستلام: ${item.deliveryDate} | الحالة: ${item.deliveryStatus} | الواتساب: ${item.whatsapp} | الإجمالي: ${item.totalPrice} | المدفوع: ${item.paid} | المتبقي: ${item.remaining} | حالة المدفوعات: ${item.paymentStatus}`
+    );
+  });
+
+  if (rows.length > displayRows.length) {
+    lines.push('');
+    lines.push(`تم عرض أول ${displayRows.length} نتيجة فقط من أصل ${rows.length}.`);
+  }
+
+  return lines.join('\n');
+}
+
+function getReminderLogoDataUrl_() {
+  const blob = DriveApp.getFileById(REMINDER_LOGO_FILE_ID).getBlob();
+  return 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes());
+}
+
+function addDays_(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function toIsoDate_(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (isNaN(d)) return '';
+  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+}
+
+function escapeHtml_(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}

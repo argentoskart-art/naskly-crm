@@ -1,0 +1,118 @@
+﻿const MAIN_SHEET_NAME = 'MainData';
+
+const MAIN_HEADERS = [
+  'الرقم التعريفي',
+  'تاريخ الحجز',
+  'تاريخ الاستلام',
+  'اسم العميل',
+  'رقم الواتساب',
+  'مصدر العميل',
+  'الموظف المسؤول عن الديل',
+  'موظف التسليم',
+  'نوع الخدمة المقدمة',
+  'مواصفات الخدمة',
+  'السعر الإجمالي للخدمة',
+  'المدفوع',
+  'المتبقي',
+  'حالة التسليم',
+  'حالة المدفوعات',
+];
+
+const MAIN_NOTES = [
+  'الرقم التعريفي هو رقم ينشأ تلقائيا مثال N001، ويشترط ملئ بعض العواميد قبله مثل اسم العميل وتاريخ الحجز ورقم الواتساب ومصدر العميل والموظف المسؤول عن الديل وموظف التسليم ونوع الخدمة المقدمة ومواصفات الخدمة',
+  'عمود يحتوي علي كالندر لاختيار التاريخ',
+  'كالندر يتم وضع تاريخ الاستلام بها',
+  'يتم إدخاله يدويا',
+  '',
+  'يكون اختيار للمصدر من دروب ليست، والاختيارات هي واتساب او فيسبوك',
+  'يتم اختيار بدروب ليست (ويرث الأسماء من تاب "إدارة الفريق" العمود A)',
+  'يتم اختيار بدروب ليست (ويرث الأسماء من تاب "إدارة الفريق" العمود A)',
+  'يتم اختيار نوع او اكثر من نوع بدروب ليست تسمح باختيار اكثر من نوع، وترث الاختيارات من تاب "الخدمات والباقات" العمود A ويسمي الكتب والباقات',
+  'يتم إدخالها يدويا',
+  'سعر الخدمة الإجمالي المتفق عليه',
+  'ما تم دفعه وقت التعاقد',
+  'المتبقي من سعر الخدمات',
+  'دروب ليست يتم اختيار واحد فقط منها (لم تبدأ بعد - جزئي - تم بالكامل)',
+  'لم يتم استلام مبالغ - جزئي - تم بالكامل',
+];
+
+function createMainDataOnly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(MAIN_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(MAIN_SHEET_NAME);
+  } else {
+    sheet.clear();
+    sheet.clearFormats();
+    sheet.clearNotes();
+    sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns()).breakApart();
+  }
+
+  sheet.getRange(1, 1, 1, MAIN_HEADERS.length).setValues([MAIN_HEADERS]);
+  sheet.getRange(2, 1, 1, MAIN_NOTES.length).setValues([MAIN_NOTES]);
+
+  sheet.setFrozenRows(1);
+  sheet.setRowHeight(1, 36);
+  sheet.getRange(1, 1, 1, MAIN_HEADERS.length)
+    .setBackground('#1F4E78')
+    .setFontColor('#FFFFFF')
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+
+  sheet.getRange(2, 1, 1, MAIN_HEADERS.length)
+    .setBackground('#F3F7FB')
+    .setFontStyle('italic')
+    .setWrap(true)
+    .setVerticalAlignment('top');
+
+  const widths = [110, 115, 115, 160, 130, 120, 170, 130, 190, 220, 140, 110, 120, 130, 140];
+  widths.forEach((width, index) => {
+    sheet.setColumnWidth(index + 1, width);
+  });
+
+  sheet.getRange('B:B').setNumberFormat('yyyy-mm-dd');
+  sheet.getRange('C:C').setNumberFormat('yyyy-mm-dd');
+  sheet.getRange('K:M').setNumberFormat('#,##0.00');
+
+  const dateRule = SpreadsheetApp.newDataValidation()
+    .requireDate()
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange('B3:C').setDataValidation(dateRule);
+
+  const sourceRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['واتساب', 'فيسبوك'], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange('F3:F').setDataValidation(sourceRule);
+
+  const deliveryRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['لم تبدأ بعد', 'جزئي', 'تم بالكامل'], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange('N3:N').setDataValidation(deliveryRule);
+
+  const paymentRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['لم يتم استلام مبالغ', 'جزئي', 'تم بالكامل'], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange('O3:O').setDataValidation(paymentRule);
+
+  sheet.getRange(1, 1, sheet.getMaxRows(), MAIN_HEADERS.length).createFilter();
+
+  const bandRange = sheet.getRange(1, 1, Math.max(sheet.getMaxRows(), 3), MAIN_HEADERS.length);
+  bandRange.applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY);
+
+  sheet.getRange(3, 1, sheet.getMaxRows() - 2, MAIN_HEADERS.length)
+    .setWrap(true)
+    .setVerticalAlignment('middle');
+}
+
+function addMainDataMenu() {
+  SpreadsheetApp.getUi()
+    .createMenu('CRM Setup')
+    .addItem('Create MainData Sheet', 'createMainDataOnly')
+    .addToUi();
+}

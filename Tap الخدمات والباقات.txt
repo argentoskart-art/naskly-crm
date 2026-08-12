@@ -1,0 +1,50 @@
+﻿const SERVICES_SHEET_NAME = 'الخدمات والباقات';
+const SERVICES_HEADER = 'الكتب والباقات';
+const SERVICES_ITEMS = [
+  'المعاصر 1 ثانوي',
+  'المعاصر 2 ثاتوي',
+  'سلاح التلميذ 3 ثانوي',
+  'باقة 800 سلايد',
+];
+
+function createServicesOnly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SERVICES_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(SERVICES_SHEET_NAME);
+  } else {
+    sheet.clear();
+    sheet.clearFormats();
+    sheet.clearNotes();
+  }
+
+  sheet.getRange(1, 1).setValue(SERVICES_HEADER);
+  sheet.getRange(2, 1, SERVICES_ITEMS.length, 1).setValues(SERVICES_ITEMS.map(v => [v]));
+
+  sheet.setFrozenRows(1);
+  sheet.setColumnWidth(1, 240);
+  sheet.setRowHeight(1, 34);
+
+  sheet.getRange(1, 1)
+    .setBackground('#1F4E78')
+    .setFontColor('#FFFFFF')
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+
+  sheet.getRange(2, 1, SERVICES_ITEMS.length, 1)
+    .setBackground('#F7FBFF')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+
+  sheet.getRange(1, 1, SERVICES_ITEMS.length + 1, 1).setWrap(true);
+  sheet.getRange(1, 1, SERVICES_ITEMS.length + 1, 1).createFilter();
+}
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('CRM Setup')
+    .addItem('Create Services Sheet', 'createServicesOnly')
+    .addToUi();
+}
