@@ -161,7 +161,7 @@ async function handleSearch() {
   messageEl.style.color = '#06b6d4';
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('clients')
       .select('*')
       .ilike('id', searchId)
