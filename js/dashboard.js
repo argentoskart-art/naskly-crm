@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadClientsData() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('clients')
       .select('*')
       .order('created_at', { ascending: false });
@@ -162,7 +162,7 @@ async function deleteClient(id, name) {
   if (!confirm(`هل أنت تأكد من حذف بيانات العميل (${name} - ${id})؟`)) return;
 
   try {
-    const { error } = await supabase.from('clients').delete().eq('id', id);
+    const { error } = await db.from('clients').delete().eq('id', id);
     if (error) throw error;
     alert(`تم حذف العميل (${id}) بنجاح.`);
     await loadClientsData();
