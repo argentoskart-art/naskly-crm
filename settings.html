@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة النظام والبيانات | Naskly CRM</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="brand">
+      <img src="logo_small.png" alt="Naskly Logo" onerror="this.style.display='none'">
+      <h1>Naskly CRM</h1>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn">إدخال وبحث العملاء</a>
+      <a href="dashboard.html" class="nav-btn">لوحة التحكم والشبكة</a>
+      <a href="settings.html" class="nav-btn active">إدارة الفريق والخدمات</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- Team Members Management -->
+    <div class="card">
+      <div class="card-title">إدارة فريق العمل (إضافة / تعديل / حذف)</div>
+      
+      <div style="display: flex; gap: 12px; max-width: 500px; margin-bottom: 1.5rem;">
+        <input type="text" id="teamInput" class="form-control" placeholder="اسم الموظف الجديد...">
+        <button id="addTeamBtn" class="btn btn-primary">إضافة موظف</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>اسم الموظف</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="teamTbody">
+            <tr>
+              <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 15px;">جاري التحميل...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Services Management -->
+    <div class="card">
+      <div class="card-title">إدارة الخدمات والباقات (إضافة / تعديل / حذف)</div>
+      
+      <div style="display: flex; gap: 12px; max-width: 500px; margin-bottom: 1.5rem;">
+        <input type="text" id="serviceInput" class="form-control" placeholder="اسم الخدمة الجديدة...">
+        <button id="addServiceBtn" class="btn btn-primary">إضافة خدمة</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>اسم الخدمة</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="servicesTbody">
+            <tr>
+              <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 15px;">جاري التحميل...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

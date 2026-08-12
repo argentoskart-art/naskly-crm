@@ -101,6 +101,7 @@ function renderGridTable(clients) {
         <td><span class="badge ${payBadge}">${client.payment_status || 'لم يتم استلام مبالغ'}</span></td>
         <td>
           <a href="index.html?id=${client.id}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">تعديل</a>
+          <button onclick="deleteClient('${client.id}', '${(client.client_name || '').replace(/'/g, "\\'")}')" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; color: #ef4444; border-color: #ef4444;">حذف</button>
         </td>
       </tr>
     `;
@@ -155,4 +156,17 @@ function exportToCsv() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+async function deleteClient(id, name) {
+  if (!confirm(`هل أنت تأكد من حذف بيانات العميل (${name} - ${id})؟`)) return;
+
+  try {
+    const { error } = await supabase.from('clients').delete().eq('id', id);
+    if (error) throw error;
+    alert(`تم حذف العميل (${id}) بنجاح.`);
+    await loadClientsData();
+  } catch (err) {
+    alert('حدث خطأ أثناء حذف العميل: ' + err.message);
+  }
 }
