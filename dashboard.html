@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="css/style.css">
   <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Authentication Protection Guard -->
+  <script src="js/auth.js"></script>
 </head>
 <body>
 
@@ -23,6 +25,7 @@
       <a href="index.html" class="nav-btn">إدخال وبحث العملاء</a>
       <a href="dashboard.html" class="nav-btn active">لوحة التحكم والشبكة</a>
       <a href="settings.html" class="nav-btn">إدارة الفريق والخدمات</a>
+      <button onclick="sessionStorage.removeItem('naskly_auth_session'); window.location.href='login.html';" class="nav-btn" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; cursor: pointer;">تسجيل الخروج</button>
     </div>
   </nav>
 

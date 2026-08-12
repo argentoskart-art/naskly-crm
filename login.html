@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول | Naskly CRM</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--palette-navy-dark);">
+
+  <div class="card" style="width: 100%; max-width: 420px; padding: 2.5rem; text-align: center; border: 1px solid var(--palette-gold); box-shadow: 0 15px 35px rgba(0,0,0,0.6);">
+    <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+      <img src="logo_small.png" alt="Naskly Logo" style="height: 55px;" onerror="this.style.display='none'">
+      <h1 style="color: var(--palette-gold); font-size: 1.5rem; margin: 0;">Naskly CRM</h1>
+    </div>
+
+    <h2 style="font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--palette-ice);">تسجيل الدخول للنظام</h2>
+
+    <form id="loginForm">
+      <div class="form-group" style="margin-bottom: 1rem; text-align: right;">
+        <label style="margin-bottom: 6px; display: block; color: var(--palette-ice-muted);">اسم المستخدم</label>
+        <input type="text" id="loginUsername" class="form-control" placeholder="أدخل اسم المستخدم..." required style="width: 100%;">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem; text-align: right;">
+        <label style="margin-bottom: 6px; display: block; color: var(--palette-ice-muted);">كلمة المرور</label>
+        <input type="password" id="loginPassword" class="form-control" placeholder="أدخل كلمة المرور..." required style="width: 100%;">
+      </div>
+
+      <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; background: var(--palette-gold); color: #000; font-weight: 800;">
+        تسجيل الدخول
+      </button>
+
+      <div id="loginError" style="margin-top: 1rem; color: #ef4444; font-weight: bold; font-size: 0.9rem;"></div>
+    </form>
+  </div>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>
