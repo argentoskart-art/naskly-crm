@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadTeamMembers() {
   const tbody = document.getElementById('teamTbody');
   try {
-    const { data, error } = await supabase
+    const db = initSupabase();
+    const { data, error } = await db
       .from('team_members')
       .select('*')
       .order('id', { ascending: true });
@@ -47,7 +48,8 @@ async function handleAddTeam() {
   if (!name) return alert('يرجى كتابة اسم الموظف');
 
   try {
-    const { error } = await supabase.from('team_members').insert([{ name }]);
+    const db = initSupabase();
+    const { error } = await db.from('team_members').insert([{ name }]);
     if (error) throw error;
     input.value = '';
     loadTeamMembers();
@@ -61,7 +63,8 @@ async function editTeamMember(id, oldName) {
   if (!newName || newName.trim() === oldName) return;
 
   try {
-    const { error } = await supabase
+    const db = initSupabase();
+    const { error } = await db
       .from('team_members')
       .update({ name: newName.trim() })
       .eq('id', id);
@@ -77,7 +80,8 @@ async function deleteTeamMember(id, name) {
   if (!confirm(`هل أنت تأكد من حذف الموظف (${name})؟`)) return;
 
   try {
-    const { error } = await supabase.from('team_members').delete().eq('id', id);
+    const db = initSupabase();
+    const { error } = await db.from('team_members').delete().eq('id', id);
     if (error) throw error;
     loadTeamMembers();
   } catch (err) {
@@ -90,7 +94,8 @@ async function deleteTeamMember(id, name) {
 async function loadServices() {
   const tbody = document.getElementById('servicesTbody');
   try {
-    const { data, error } = await supabase
+    const db = initSupabase();
+    const { data, error } = await db
       .from('services')
       .select('*')
       .order('id', { ascending: true });
@@ -125,7 +130,8 @@ async function handleAddService() {
   if (!name) return alert('يرجى كتابة اسم الخدمة');
 
   try {
-    const { error } = await supabase.from('services').insert([{ name }]);
+    const db = initSupabase();
+    const { error } = await db.from('services').insert([{ name }]);
     if (error) throw error;
     input.value = '';
     loadServices();
