@@ -210,7 +210,7 @@ async function handleSendReminderEmailNow() {
       return c.delivery_date === tomorrowStr && openStatuses.includes(c.delivery_status);
     });
 
-    // Send Mail via mailto fallback client trigger with HTML report
+    // Open Gmail web application directly with prefilled body and target recipient
     const subject = encodeURIComponent('تنويه: عملاء موعد تسليمهم غدا - Naskly CRM');
     
     let reportText = `تنويه: هذه قائمة بالعملاء ميعاد تسليمهم غدا (${tomorrowStr}) وحالتهم مازالت مفتوحة:\n\n`;
@@ -222,11 +222,13 @@ async function handleSendReminderEmailNow() {
       });
     }
 
-    const mailtoUrl = `mailto:${targetEmail}?subject=${subject}&body=${encodeURIComponent(reportText)}`;
-    window.location.href = mailtoUrl;
+    reportText += '\nتنويه: هذه قائمة بالعملاء ميعاد تسليمهم غدا وحالتهم مازالت مفتوحة يرجى اتخاذ اللازم.';
+
+    const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(targetEmail)}&su=${subject}&body=${encodeURIComponent(reportText)}`;
+    window.open(gmailComposeUrl, '_blank');
 
     statusMsg.style.color = '#4ade80';
-    statusMsg.textContent = `تم تجهيز تقرير التذكير لـ (${matchingRows.length}) عملاء وتسليمه لبريد: ${targetEmail}`;
+    statusMsg.textContent = `تم فتح Gmail وإعداد إيميل التذكير لـ (${matchingRows.length}) عملاء بنجاح!`;
 
   } catch (err) {
     console.error('Email error:', err);
