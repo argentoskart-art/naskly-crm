@@ -3,21 +3,31 @@
 const SUPABASE_URL = 'https://veaxrryzxmvngtwpwfko.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlYXhycnl6eG12bmd0d3B3ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDcxNTcsImV4cCI6MjEwMjEyMzE1N30.KcekxUbaBMMaPMR_prGfx6a3IeySu-FpM5n-bb2mcug';
 
-var supabase;
+let dbClient = null;
 
 function initSupabase() {
-  if (!supabase) {
-    if (window.supabase && typeof window.supabase.createClient === 'function') {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else if (window.Supabase && typeof window.Supabase.createClient === 'function') {
-      supabase = window.Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
+  if (dbClient) return dbClient;
+  
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else if (window.Supabase && typeof window.Supabase.createClient === 'function') {
+    dbClient = window.Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
-  return supabase;
+  return dbClient;
 }
 
-// Call initSupabase right away
-initSupabase();
+// Global proxy object so calls like supabase.from(...) work reliably across scripts
+var supabase = {
+  from: function(table) {
+    const client = initSupabase();
+    if (!client) {
+      console.error('Supabase CDN Client failed to load!');
+      alert('لم يتم اتصال المتصفح بـ Supabase، يرجى التحديث.');
+      throw new Error('Supabase client uninitialized');
+    }
+    return client.from(table);
+  }
+};
 
 /**
  * Generate Next Auto ID (N001, N002, etc.)
