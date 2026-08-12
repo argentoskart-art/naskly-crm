@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadTeamMembers() {
   const tbody = document.getElementById('teamTbody');
   try {
-    const db = initSupabase();
     const { data, error } = await db
       .from('team_members')
       .select('*')
@@ -21,7 +20,7 @@ async function loadTeamMembers() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:15px;">لا يوجد موظفين حالياً</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--palette-ice-muted); padding:15px;">لا يوجد موظفين حالياً</td></tr>`;
       return;
     }
 
@@ -48,7 +47,6 @@ async function handleAddTeam() {
   if (!name) return alert('يرجى كتابة اسم الموظف');
 
   try {
-    const db = initSupabase();
     const { error } = await db.from('team_members').insert([{ name }]);
     if (error) throw error;
     input.value = '';
@@ -63,7 +61,6 @@ async function editTeamMember(id, oldName) {
   if (!newName || newName.trim() === oldName) return;
 
   try {
-    const db = initSupabase();
     const { error } = await db
       .from('team_members')
       .update({ name: newName.trim() })
@@ -80,7 +77,6 @@ async function deleteTeamMember(id, name) {
   if (!confirm(`هل أنت تأكد من حذف الموظف (${name})؟`)) return;
 
   try {
-    const db = initSupabase();
     const { error } = await db.from('team_members').delete().eq('id', id);
     if (error) throw error;
     loadTeamMembers();
@@ -94,7 +90,6 @@ async function deleteTeamMember(id, name) {
 async function loadServices() {
   const tbody = document.getElementById('servicesTbody');
   try {
-    const db = initSupabase();
     const { data, error } = await db
       .from('services')
       .select('*')
@@ -103,7 +98,7 @@ async function loadServices() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:15px;">لا توجد خدمات حالياً</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--palette-ice-muted); padding:15px;">لا توجد خدمات حالياً</td></tr>`;
       return;
     }
 
@@ -130,7 +125,6 @@ async function handleAddService() {
   if (!name) return alert('يرجى كتابة اسم الخدمة');
 
   try {
-    const db = initSupabase();
     const { error } = await db.from('services').insert([{ name }]);
     if (error) throw error;
     input.value = '';
@@ -145,7 +139,7 @@ async function editService(id, oldName) {
   if (!newName || newName.trim() === oldName) return;
 
   try {
-    const { error } = await supabase
+    const { error } = await db
       .from('services')
       .update({ name: newName.trim() })
       .eq('id', id);
@@ -161,7 +155,7 @@ async function deleteService(id, name) {
   if (!confirm(`هل أنت تأكد من حذف الخدمة (${name})؟`)) return;
 
   try {
-    const { error } = await supabase.from('services').delete().eq('id', id);
+    const { error } = await db.from('services').delete().eq('id', id);
     if (error) throw error;
     loadServices();
   } catch (err) {

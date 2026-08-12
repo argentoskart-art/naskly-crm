@@ -5,26 +5,20 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 let dbClient = null;
 
-function initSupabase() {
-  if (dbClient) return dbClient;
-  
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
-    dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  } else if (window.Supabase && typeof window.Supabase.createClient === 'function') {
-    dbClient = window.Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+function getDb() {
+  if (!dbClient) {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
   }
   return dbClient;
 }
 
-// Global proxy object so calls like supabase.from(...) work reliably across scripts
-var supabase = {
+// Global accessor object named db
+var db = {
   from: function(table) {
-    const client = initSupabase();
-    if (!client) {
-      console.error('Supabase CDN Client failed to load!');
-      alert('لم يتم اتصال المتصفح بـ Supabase، يرجى التحديث.');
-      throw new Error('Supabase client uninitialized');
-    }
+    const client = getDb();
+    if (!client) throw new Error('Supabase client failed to connect');
     return client.from(table);
   }
 };
