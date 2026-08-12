@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard & Grid View</title>
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            palette: {
+              green: '#337A55',
+              'green-dark': '#265C3F',
+              gold: '#F7C01B',
+              'gold-dark': '#C9990D',
+              orange: '#EA7C25',
+              'orange-dark': '#C55F11',
+              navy: '#283849',
+              'navy-dark': '#1B2735',
+              'navy-light': '#364A5F',
+              ice: '#ECF1F4',
+              'ice-muted': '#B0C2D0'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #1B2735;
+      color: #ECF1F4;
+    }
+    .glass-card {
+      background: rgba(40, 56, 73, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(236, 241, 244, 0.1);
+    }
+    .glass-card-hover {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-3px);
+      border-color: rgba(247, 192, 27, 0.4);
+      box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.35);
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1B2735;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #364A5F;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #F7C01B;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12 antialiased selection:bg-palette-gold selection:text-palette-navy-dark">
+
+  <!-- Header / Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-palette-navy-dark/95 backdrop-blur-xl border-b border-palette-navy-light/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Logo Icon -->
+        <div class="flex items-center space-x-3 space-x-reverse">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-palette-green via-palette-gold to-palette-orange flex items-center justify-center shadow-lg shadow-palette-green/20 text-palette-navy-dark">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="flex space-x-2 space-x-reverse bg-palette-navy/90 p-1.5 rounded-xl border border-palette-navy-light/60">
+          <button id="tab-btn-dashboard" onclick="switchTab('dashboard')" class="px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-palette-green text-palette-ice shadow-md shadow-palette-green/30">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            لوحة التحكم (Dashboard)
+          </button>
+          <button id="tab-btn-gridview" onclick="switchTab('gridview')" class="px-5 py-2 rounded-lg text-sm font-medium text-palette-ice-muted hover:text-palette-ice hover:bg-palette-navy-light/50 transition-all flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            Grid View
+          </button>
+        </nav>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+          <button onclick="loadData()" class="px-3.5 py-2 rounded-lg bg-palette-navy hover:bg-palette-navy-light border border-palette-navy-light text-palette-ice text-xs font-semibold flex items-center gap-2 transition">
+            <svg id="refresh-icon" class="w-4 h-4 text-palette-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            تحديث البيانات
+          </button>
+          <a href="https://docs.google.com/spreadsheets/d/10RifInemGhayL-iBZjwDc-kx0bO5h3kkMb6vNN6HRWI/edit?gid=233665274#gid=233665274" target="_blank" class="px-3.5 py-2 rounded-lg bg-palette-green/20 hover:bg-palette-green/30 border border-palette-green/40 text-palette-green text-xs font-semibold flex items-center gap-2 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            فتح الشيت
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+
+    <!-- Loading State Bar -->
+    <div id="loading-spinner" class="hidden mb-6 p-4 rounded-xl glass-card flex items-center justify-center gap-3 text-palette-gold">
+      <svg class="animate-spin h-5 w-5 text-palette-gold" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span class="text-sm font-medium">جاري تحميل البيانات...</span>
+    </div>
+
+    <!-- TAB 1: DASHBOARD VIEW -->
+    <section id="view-dashboard" class="space-y-8">
+      
+      <!-- Top Financial & Client KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <!-- Total Clients Card -->
+        <div class="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+          <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-palette-green/10 rounded-full blur-xl"></div>
+          <div class="flex justify-between items-start mb-3">
+            <span class="text-palette-ice-muted text-sm font-medium">إجمالي عدد العملاء</span>
+            <div class="p-2.5 rounded-xl bg-palette-green/20 border border-palette-green/30 text-palette-green">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            </div>
+          </div>
+          <div class="text-3xl font-extrabold text-palette-ice" id="dash-total-clients">0</div>
+        </div>
+
+        <!-- Total Services Revenue Card -->
+        <div class="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+          <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-palette-gold/10 rounded-full blur-xl"></div>
+          <div class="flex justify-between items-start mb-3">
+            <span class="text-palette-ice-muted text-sm font-medium">إجمالي أسعار الخدمات</span>
+            <div class="p-2.5 rounded-xl bg-palette-gold/20 border border-palette-gold/30 text-palette-gold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+          </div>
+          <div class="text-3xl font-extrabold text-palette-gold mb-1" id="dash-total-services">0.00 <span class="text-base font-normal text-palette-ice-muted">ج.م</span></div>
+          <p class="text-xs text-palette-ice-muted">القيمة المالية الكلية للمشاريع</p>
+        </div>
+
+        <!-- Total Paid Card -->
+        <div class="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+          <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-palette-green/10 rounded-full blur-xl"></div>
+          <div class="flex justify-between items-start mb-3">
+            <span class="text-palette-ice-muted text-sm font-medium">إجمالي المبالغ المدفوعة</span>
+            <div class="p-2.5 rounded-xl bg-palette-green/20 border border-palette-green/30 text-palette-green">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+          </div>
+          <div class="text-3xl font-extrabold text-palette-green mb-1" id="dash-total-paid">0.00 <span class="text-base font-normal text-palette-ice-muted">ج.م</span></div>
+          <p class="text-xs text-palette-green">المبالغ المستلمة بالخزينة</p>
+        </div>
+
+        <!-- Pending Collection Card -->
+        <div class="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+          <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-palette-orange/10 rounded-full blur-xl"></div>
+          <div class="flex justify-between items-start mb-3">
+            <span class="text-palette-ice-muted text-sm font-medium">إجمالي انتظار التحصيل</span>
+            <div class="p-2.5 rounded-xl bg-palette-orange/20 border border-palette-orange/30 text-palette-orange">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+          </div>
+          <div class="text-3xl font-extrabold text-palette-orange mb-1" id="dash-total-pending">0.00 <span class="text-base font-normal text-palette-ice-muted">ج.م</span></div>
+          <p class="text-xs text-palette-orange">مبالغ آجل / متبقية على العملاء</p>
+        </div>
+
+      </div>
+
+      <!-- Detailed Breakdown Cards Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Delivery Statuses Section -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between pb-4 mb-4 border-b border-palette-navy-light/60">
+            <h3 class="text-lg font-bold text-palette-ice flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-palette-gold"></span>
+              حالات التسليم
+            </h3>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-palette-navy-dark text-palette-ice-muted border border-palette-navy-light/60">المهام والمشاريع</span>
+          </div>
+          <div id="dash-delivery-container" class="space-y-4">
+            <!-- Dynamic Delivery Items -->
+          </div>
+        </div>
+
+        <!-- Payment Statuses Section -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between pb-4 mb-4 border-b border-palette-navy-light/60">
+            <h3 class="text-lg font-bold text-palette-ice flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-palette-green"></span>
+              حالات المدفوعات
+            </h3>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-palette-navy-dark text-palette-ice-muted border border-palette-navy-light/60">توزيع المدفوعات</span>
+          </div>
+          <div id="dash-payment-container" class="space-y-4">
+            <!-- Dynamic Payment Items -->
+          </div>
+        </div>
+
+        <!-- Client Sources Section -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between pb-4 mb-4 border-b border-palette-navy-light/60">
+            <h3 class="text-lg font-bold text-palette-ice flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-palette-orange"></span>
+              مصادر العملاء (Channels)
+            </h3>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-palette-navy-dark text-palette-ice-muted border border-palette-navy-light/60">قنوات الجلب</span>
+          </div>
+          <div id="dash-sources-container" class="space-y-4">
+            <!-- Dynamic Client Sources -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- TAB 2: GRID VIEW -->
+    <section id="view-gridview" class="hidden space-y-6">
+
+      <!-- Filter Controls Bar -->
+      <div class="glass-card rounded-2xl p-5 border border-palette-navy-light/60">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-palette-navy-light/60">
+          <div>
+            <h2 class="text-lg font-bold text-palette-ice">جدول تفاصيل العملاء والعمليات</h2>
+            <p class="text-xs text-palette-ice-muted">تصفية وبحث فورى بحسب أى حقل من الحقول</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="resetFilters()" class="px-3 py-1.5 rounded-lg bg-palette-navy-dark hover:bg-palette-navy-light border border-palette-navy-light text-palette-ice text-xs font-semibold transition">
+              إعادة ضبط الفلاتر ↺
+            </button>
+          </div>
+        </div>
+
+        <!-- Inputs & Filters Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- Search Bar -->
+          <div>
+            <label class="block text-xs font-semibold text-palette-ice-muted mb-1.5">البحث السريع (الرقم / الاسم / الواتساب)</label>
+            <div class="relative">
+              <input type="text" id="filter-search" oninput="applyFilters()" placeholder="ابحث باسم العميل أو الكود..." 
+                class="w-full bg-palette-navy-dark border border-palette-navy-light focus:border-palette-gold focus:ring-1 focus:ring-palette-gold text-palette-ice text-sm rounded-xl px-3.5 py-2.5 pr-10 outline-none transition">
+              <svg class="w-4 h-4 text-palette-ice-muted absolute right-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+          </div>
+
+          <!-- Filter Source -->
+          <div>
+            <label class="block text-xs font-semibold text-palette-ice-muted mb-1.5">مصدر العميل</label>
+            <select id="filter-source" onchange="applyFilters()" class="w-full bg-palette-navy-dark border border-palette-navy-light focus:border-palette-gold focus:ring-1 focus:ring-palette-gold text-palette-ice text-sm rounded-xl px-3.5 py-2.5 outline-none transition">
+              <option value="">جميع المصادر</option>
+            </select>
+          </div>
+
+          <!-- Filter Delivery Status -->
+          <div>
+            <label class="block text-xs font-semibold text-palette-ice-muted mb-1.5">حالة التسليم</label>
+            <select id="filter-delivery" onchange="applyFilters()" class="w-full bg-palette-navy-dark border border-palette-navy-light focus:border-palette-gold focus:ring-1 focus:ring-palette-gold text-palette-ice text-sm rounded-xl px-3.5 py-2.5 outline-none transition">
+              <option value="">جميع حالات التسليم</option>
+            </select>
+          </div>
+
+          <!-- Filter Payment Status -->
+          <div>
+            <label class="block text-xs font-semibold text-palette-ice-muted mb-1.5">حالة المدفوعات</label>
+            <select id="filter-payment" onchange="applyFilters()" class="w-full bg-palette-navy-dark border border-palette-navy-light focus:border-palette-gold focus:ring-1 focus:ring-palette-gold text-palette-ice text-sm rounded-xl px-3.5 py-2.5 outline-none transition">
+              <option value="">جميع حالات المدفوعات</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Filter Live Dynamic Summary Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-palette-navy-dark/90 border border-palette-navy-light/60 rounded-xl p-3.5 flex items-center justify-between">
+          <span class="text-xs text-palette-ice-muted font-medium">النتائج المعروضة:</span>
+          <span class="text-base font-bold text-palette-ice" id="grid-count-matched">0 / 0</span>
+        </div>
+        <div class="bg-palette-navy-dark/90 border border-palette-navy-light/60 rounded-xl p-3.5 flex items-center justify-between">
+          <span class="text-xs text-palette-ice-muted font-medium">مجموع الخدمة:</span>
+          <span class="text-base font-bold text-palette-gold" id="grid-sum-total">0.00 ج.م</span>
+        </div>
+        <div class="bg-palette-navy-dark/90 border border-palette-navy-light/60 rounded-xl p-3.5 flex items-center justify-between">
+          <span class="text-xs text-palette-ice-muted font-medium">مجموع المدفوع:</span>
+          <span class="text-base font-bold text-palette-green" id="grid-sum-paid">0.00 ج.م</span>
+        </div>
+        <div class="bg-palette-navy-dark/90 border border-palette-navy-light/60 rounded-xl p-3.5 flex items-center justify-between">
+          <span class="text-xs text-palette-ice-muted font-medium">مجموع المتبقي:</span>
+          <span class="text-base font-bold text-palette-orange" id="grid-sum-remaining">0.00 ج.م</span>
+        </div>
+      </div>
+
+      <!-- Table Card Container -->
+      <div class="glass-card rounded-2xl overflow-hidden border border-palette-navy-light/60 shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-right border-collapse min-w-[1000px]">
+            <thead>
+              <tr class="bg-palette-navy-dark text-palette-ice text-xs uppercase font-bold tracking-wider border-b border-palette-navy-light/60">
+                <th class="py-4 px-4 whitespace-nowrap">كود (ID)</th>
+                <th class="py-4 px-4 whitespace-nowrap">اسم العميل</th>
+                <th class="py-4 px-4 whitespace-nowrap">الواتساب / التواصل</th>
+                <th class="py-4 px-4 whitespace-nowrap">المصدر</th>
+                <th class="py-4 px-4 whitespace-nowrap">موظف التسليم</th>
+                <th class="py-4 px-4 whitespace-nowrap">نوع الخدمة</th>
+                <th class="py-4 px-4 whitespace-nowrap">إجمالي السعر</th>
+                <th class="py-4 px-4 whitespace-nowrap">المدفوع</th>
+                <th class="py-4 px-4 whitespace-nowrap">المتبقي</th>
+                <th class="py-4 px-4 whitespace-nowrap">حالة التسليم</th>
+                <th class="py-4 px-4 whitespace-nowrap">حالة المدفوعات</th>
+                <th class="py-4 px-4 whitespace-nowrap text-center">التفاصيل</th>
+              </tr>
+            </thead>
+            <tbody id="grid-table-body" class="divide-y divide-palette-navy-light/40 text-sm text-palette-ice font-medium">
+              <!-- Dynamic Rows inserted here -->
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Empty State View -->
+        <div id="grid-empty-state" class="hidden p-12 text-center">
+          <div class="w-16 h-16 bg-palette-navy-dark rounded-full flex items-center justify-center mx-auto mb-3 text-palette-ice-muted">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <h4 class="text-base font-bold text-palette-ice">لا توجد نتائج تطابق خيارات التصفية</h4>
+          <p class="text-xs text-palette-ice-muted mt-1">جرب تغيير كلمات البحث أو إعادة ضبط الفلاتر</p>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Details Modal -->
+  <div id="detail-modal" class="fixed inset-0 z-50 hidden bg-palette-navy-dark/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card bg-palette-navy border border-palette-navy-light rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 transform transition-all">
+      <div class="flex items-center justify-between border-b border-palette-navy-light/60 pb-3">
+        <div class="flex items-center gap-3">
+          <span id="modal-id-badge" class="px-2.5 py-1 rounded-md bg-palette-gold/20 text-palette-gold border border-palette-gold/40 text-xs font-bold"></span>
+          <h3 id="modal-customer-name" class="text-lg font-bold text-palette-ice"></h3>
+        </div>
+        <button onclick="closeModal()" class="text-palette-ice-muted hover:text-palette-ice p-1 rounded-lg hover:bg-palette-navy-light transition">
+          ✕
+        </button>
+      </div>
+
+      <div id="modal-content" class="grid grid-cols-2 gap-4 text-sm">
+        <!-- Dynamic Modal Fields -->
+      </div>
+
+      <div class="pt-4 border-t border-palette-navy-light/60 flex justify-end">
+        <button onclick="closeModal()" class="px-4 py-2 bg-palette-navy-dark hover:bg-palette-navy-light text-palette-ice text-xs font-bold rounded-xl transition">
+          إغلاق النافذة
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global State
+    let rawDashboardData = null;
+    let rawGridViewData = [];
+    let activeTab = 'dashboard';
+
+    // Mock initial test data in case opening standalone outside Apps Script
+    const MOCK_DATA = {
+      dashboard: {
+        totalClients: 4,
+        financialSummary: {
+          "اجمالي اسعار الخدمات": 3300.00,
+          "اجمالي المبالغ المدفوعة": 2400.00,
+          "اجمالي انتظار التحصيل": 900.00
+        },
+        deliveryStatuses: [
+          { label: "مهام لم يبدأ العمل فيها بعد", count: 3 },
+          { label: "مهام تم الانتهاء منها جزئياً", count: 0 },
+          { label: "مهام تمت بالكامل", count: 1 }
+        ],
+        paymentStatuses: [
+          { label: "عملاء لم يتم استلام اي مبالغ منهم", count: 1 },
+          { label: "عملاء دفعوا جزئياً", count: 2 },
+          { label: "عملاء دفعوا بالكامل", count: 1 }
+        ],
+        clientSources: [
+          { label: "عملاء عن طريق فيس بوك", count: 1 },
+          { label: "عملاء عن طريق واتس اب", count: 3 }
+        ]
+      },
+      gridView: [
+        { id: "N001", bookingDate: "2026-08-11", deliveryDate: "2026-08-13", customerName: "ahmed adel", whatsapp: "233232323", source: "WhatsApp", assignedEmployee: "محمود علي", responsibleEmployee: "مهند محمد", serviceType: "المعاصر 1 ثانوي، باقة 800 سلايد", serviceSpecs: "باقة 800 سلايد", totalPrice: 800.00, paidAmount: 800.00, remainingAmount: 0.00, deliveryStatus: "تم بالكامل", paymentStatus: "لم يتم استلام مبالغ" },
+        { id: "N002", bookingDate: "2026-08-10", deliveryDate: "2026-08-14", customerName: "نهى نوفل", whatsapp: "323123232", source: "FaceBook", assignedEmployee: "مهند محمد", responsibleEmployee: "سمير محمد", serviceType: "باقة 800 سلايد", serviceSpecs: "داتا 800 سلايد", totalPrice: 1000.00, paidAmount: 400.00, remainingAmount: 600.00, deliveryStatus: "لم يبدأ بعد", paymentStatus: "تم بالكامل" },
+        { id: "N003", bookingDate: "2026-08-11", deliveryDate: "2026-08-13", customerName: "خالد عرابي", whatsapp: "3231321321", source: "WhatsApp", assignedEmployee: "سمير محمد", responsibleEmployee: "مهند محمد", serviceType: "المعاصر 2 ثانوي", serviceSpecs: "يسي", totalPrice: 300.00, paidAmount: 200.00, remainingAmount: 100.00, deliveryStatus: "لم يبدأ بعد", paymentStatus: "جزئي" },
+        { id: "N004", bookingDate: "2026-08-11", deliveryDate: "2026-08-12", customerName: "محمد رضا عبد العزيز", whatsapp: "1067849769", source: "WhatsApp", assignedEmployee: "مهند محمد", responsibleEmployee: "سمير محمد", serviceType: "باقة 800 سلايد", serviceSpecs: "باقة 800 سلايد", totalPrice: 1200.00, paidAmount: 1000.00, remainingAmount: 200.00, deliveryStatus: "لم يبدأ بعد", paymentStatus: "جزئي" }
+      ]
+    };
+
+    // Initialize Page
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+    });
+
+    // Switch View Tabs
+    function switchTab(tabName) {
+      activeTab = tabName;
+      const dashView = document.getElementById('view-dashboard');
+      const gridView = document.getElementById('view-gridview');
+      const dashBtn = document.getElementById('tab-btn-dashboard');
+      const gridBtn = document.getElementById('tab-btn-gridview');
+
+      if (tabName === 'dashboard') {
+        dashView.classList.remove('hidden');
+        gridView.classList.add('hidden');
+        dashBtn.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-palette-green text-palette-ice shadow-md shadow-palette-green/30";
+        gridBtn.className = "px-5 py-2 rounded-lg text-sm font-medium text-palette-ice-muted hover:text-palette-ice hover:bg-palette-navy-light/50 transition-all flex items-center gap-2";
+      } else {
+        dashView.classList.add('hidden');
+        gridView.classList.remove('hidden');
+        gridBtn.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-palette-green text-palette-ice shadow-md shadow-palette-green/30";
+        dashBtn.className = "px-5 py-2 rounded-lg text-sm font-medium text-palette-ice-muted hover:text-palette-ice hover:bg-palette-navy-light/50 transition-all flex items-center gap-2";
+      }
+    }
+
+    // Load Data from Google Apps Script Backend or fallback
+    function loadData() {
+      showLoading(true);
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            showLoading(false);
+            if (res) {
+              rawDashboardData = res.dashboard;
+              rawGridViewData = res.gridView || [];
+              renderDashboard();
+              renderGridView();
+            }
+          })
+          .withFailureHandler((err) => {
+            showLoading(false);
+            console.error("Error fetching Apps Script data:", err);
+            rawDashboardData = MOCK_DATA.dashboard;
+            rawGridViewData = MOCK_DATA.gridView;
+            renderDashboard();
+            renderGridView();
+          })
+          .getInitialData();
+      } else {
+        setTimeout(() => {
+          showLoading(false);
+          rawDashboardData = MOCK_DATA.dashboard;
+          rawGridViewData = MOCK_DATA.gridView;
+          renderDashboard();
+          renderGridView();
+        }, 300);
+      }
+    }
+
+    function showLoading(show) {
+      const spinner = document.getElementById('loading-spinner');
+      const icon = document.getElementById('refresh-icon');
+      if (show) {
+        spinner.classList.remove('hidden');
+        if (icon) icon.classList.add('animate-spin');
+      } else {
+        spinner.classList.add('hidden');
+        if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    // Format Currency Helper
+    function formatCurrency(val) {
+      return (Number(val) || 0).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // RENDER DASHBOARD TAB
+    function renderDashboard() {
+      if (!rawDashboardData) return;
+
+      const { totalClients, financialSummary, deliveryStatuses, paymentStatuses, clientSources } = rawDashboardData;
+
+      // KPIs
+      document.getElementById('dash-total-clients').textContent = totalClients || 0;
+
+      const servicesPrice = financialSummary["اجمالي اسعار Services"] || financialSummary["اجمالي اسعار الخدمات"] || 0;
+      const paidAmount = financialSummary["اجمالي المبالغ المدفوعة"] || 0;
+      const pendingAmount = financialSummary["اجمالي انتظار التحصيل"] || 0;
+
+      document.getElementById('dash-total-services').innerHTML = `${formatCurrency(servicesPrice)} <span class="text-base font-normal text-palette-ice-muted">ج.م</span>`;
+      document.getElementById('dash-total-paid').innerHTML = `${formatCurrency(paidAmount)} <span class="text-base font-normal text-palette-ice-muted">ج.م</span>`;
+      document.getElementById('dash-total-pending').innerHTML = `${formatCurrency(pendingAmount)} <span class="text-base font-normal text-palette-ice-muted">ج.م</span>`;
+
+      // Render Delivery Statuses
+      const deliveryContainer = document.getElementById('dash-delivery-container');
+      deliveryContainer.innerHTML = '';
+      const totalDeliveryCount = deliveryStatuses.reduce((acc, curr) => acc + curr.count, 0) || 1;
+
+      deliveryStatuses.forEach(item => {
+        const pct = Math.round((item.count / totalDeliveryCount) * 100);
+        let badgeColor = "bg-palette-gold/20 text-palette-gold border-palette-gold/40";
+        let barColor = "bg-palette-gold";
+        
+        if (item.label.includes('بالكامل') || item.label.includes('تمت')) {
+          badgeColor = "bg-palette-green/20 text-palette-green border-palette-green/40";
+          barColor = "bg-palette-green";
+        } else if (item.label.includes('جزئياً')) {
+          badgeColor = "bg-palette-orange/20 text-palette-orange border-palette-orange/40";
+          barColor = "bg-palette-orange";
+        }
+
+        deliveryContainer.innerHTML += `
+          <div class="bg-palette-navy-dark/70 p-3.5 rounded-xl border border-palette-navy-light/40">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-palette-ice font-semibold whitespace-nowrap">${item.label}</span>
+              <span class="px-2 py-0.5 rounded-md border text-xs font-bold ${badgeColor}">${item.count}</span>
+            </div>
+            <div class="w-full bg-palette-navy-dark rounded-full h-2 overflow-hidden">
+              <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      // Render Payment Statuses
+      const paymentContainer = document.getElementById('dash-payment-container');
+      paymentContainer.innerHTML = '';
+      const totalPaymentCount = paymentStatuses.reduce((acc, curr) => acc + curr.count, 0) || 1;
+
+      paymentStatuses.forEach(item => {
+        const pct = Math.round((item.count / totalPaymentCount) * 100);
+        let badgeColor = "bg-palette-orange/20 text-palette-orange border-palette-orange/40";
+        let barColor = "bg-palette-orange";
+
+        if (item.label.includes('بالكامل')) {
+          badgeColor = "bg-palette-green/20 text-palette-green border-palette-green/40";
+          barColor = "bg-palette-green";
+        } else if (item.label.includes('جزئياً') || item.label.includes('جزئي')) {
+          badgeColor = "bg-palette-gold/20 text-palette-gold border-palette-gold/40";
+          barColor = "bg-palette-gold";
+        }
+
+        paymentContainer.innerHTML += `
+          <div class="bg-palette-navy-dark/70 p-3.5 rounded-xl border border-palette-navy-light/40">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-palette-ice font-semibold whitespace-nowrap">${item.label}</span>
+              <span class="px-2 py-0.5 rounded-md border text-xs font-bold ${badgeColor}">${item.count} عملاء</span>
+            </div>
+            <div class="w-full bg-palette-navy-dark rounded-full h-2 overflow-hidden">
+              <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      // Render Client Sources
+      const sourcesContainer = document.getElementById('dash-sources-container');
+      sourcesContainer.innerHTML = '';
+      const totalSourcesCount = clientSources.reduce((acc, curr) => acc + curr.count, 0) || 1;
+
+      clientSources.forEach(item => {
+        const pct = Math.round((item.count / totalSourcesCount) * 100);
+        const isFB = item.label.includes('فيس') || item.label.includes('Facebook');
+        const iconSvg = isFB 
+          ? `<path fill="currentColor" d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H7.5v-3H10V9.5C10 7.01 11.49 5.6 13.78 5.6c1.1 0 2.25.2 2.25.2v2.48h-1.27c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 3h-2.33v6.8c4.56-.93 8-4.96 8-9.8z"/>`
+          : `<path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z"/>`;
+
+        sourcesContainer.innerHTML += `
+          <div class="bg-palette-navy-dark/70 p-3.5 rounded-xl border border-palette-navy-light/40">
+            <div class="flex justify-between items-center mb-2">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 ${isFB ? 'text-palette-gold' : 'text-palette-green'}" viewBox="0 0 24 24">${iconSvg}</svg>
+                <span class="text-sm text-palette-ice font-semibold whitespace-nowrap">${item.label}</span>
+              </div>
+              <span class="text-xs font-bold text-palette-ice">${item.count} عميل (${pct}%)</span>
+            </div>
+            <div class="w-full bg-palette-navy-dark rounded-full h-2 overflow-hidden">
+              <div class="${isFB ? 'bg-palette-gold' : 'bg-palette-green'} h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // RENDER GRID VIEW & POPULATE FILTERS
+    function renderGridView() {
+      populateFilterOptions();
+      applyFilters();
+    }
+
+    function populateFilterOptions() {
+      const sources = new Set();
+      const deliveries = new Set();
+      const payments = new Set();
+
+      rawGridViewData.forEach(row => {
+        if (row.source) sources.add(row.source);
+        if (row.deliveryStatus) deliveries.add(row.deliveryStatus);
+        if (row.paymentStatus) payments.add(row.paymentStatus);
+      });
+
+      populateSelect('filter-source', Array.from(sources));
+      populateSelect('filter-delivery', Array.from(deliveries));
+      populateSelect('filter-payment', Array.from(payments));
+    }
+
+    function populateSelect(elemId, options) {
+      const select = document.getElementById(elemId);
+      const currentVal = select.value;
+      const defaultText = select.options[0].text;
+      
+      select.innerHTML = `<option value="">${defaultText}</option>`;
+      options.forEach(opt => {
+        select.innerHTML += `<option value="${opt}">${opt}</option>`;
+      });
+      select.value = currentVal;
+    }
+
+    function applyFilters() {
+      const query = (document.getElementById('filter-search').value || '').toLowerCase().trim();
+      const sourceFilter = document.getElementById('filter-source').value;
+      const deliveryFilter = document.getElementById('filter-delivery').value;
+      const paymentFilter = document.getElementById('filter-payment').value;
+
+      const filtered = rawGridViewData.filter(row => {
+        const matchesSearch = !query || 
+          row.id.toLowerCase().includes(query) ||
+          row.customerName.toLowerCase().includes(query) ||
+          row.whatsapp.toLowerCase().includes(query) ||
+          row.serviceType.toLowerCase().includes(query);
+
+        const matchesSource = !sourceFilter || row.source === sourceFilter;
+        const matchesDelivery = !deliveryFilter || row.deliveryStatus === deliveryFilter;
+        const matchesPayment = !paymentFilter || row.paymentStatus === paymentFilter;
+
+        return matchesSearch && matchesSource && matchesDelivery && matchesPayment;
+      });
+
+      renderTableRows(filtered);
+      updateGridSummary(filtered);
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-search').value = '';
+      document.getElementById('filter-source').value = '';
+      document.getElementById('filter-delivery').value = '';
+      document.getElementById('filter-payment').value = '';
+      applyFilters();
+    }
+
+    function updateGridSummary(filtered) {
+      document.getElementById('grid-count-matched').textContent = `${filtered.length} / ${rawGridViewData.length}`;
+
+      const totalSum = filtered.reduce((acc, row) => acc + (row.totalPrice || 0), 0);
+      const paidSum = filtered.reduce((acc, row) => acc + (row.paidAmount || 0), 0);
+      const remSum = filtered.reduce((acc, row) => acc + (row.remainingAmount || 0), 0);
+
+      document.getElementById('grid-sum-total').textContent = `${formatCurrency(totalSum)} ج.م`;
+      document.getElementById('grid-sum-paid').textContent = `${formatCurrency(paidSum)} ج.م`;
+      document.getElementById('grid-sum-remaining').textContent = `${formatCurrency(remSum)} ج.م`;
+    }
+
+    function renderTableRows(rows) {
+      const tbody = document.getElementById('grid-table-body');
+      const emptyState = document.getElementById('grid-empty-state');
+      tbody.innerHTML = '';
+
+      if (rows.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      rows.forEach((row, idx) => {
+        let delBadge = "bg-palette-navy-dark text-palette-ice-muted border-palette-navy-light";
+        if (row.deliveryStatus.includes('تم') || row.deliveryStatus.includes('كامل')) {
+          delBadge = "bg-palette-green/20 text-palette-green border-palette-green/40";
+        } else if (row.deliveryStatus.includes('جزئي')) {
+          delBadge = "bg-palette-gold/20 text-palette-gold border-palette-gold/40";
+        }
+
+        let payBadge = "bg-palette-orange/20 text-palette-orange border-palette-orange/40";
+        if (row.paymentStatus.includes('تم') || row.paymentStatus.includes('كامل')) {
+          payBadge = "bg-palette-green/20 text-palette-green border-palette-green/40";
+        } else if (row.paymentStatus.includes('جزئي')) {
+          payBadge = "bg-palette-gold/20 text-palette-gold border-palette-gold/40";
+        }
+
+        const waText = row.whatsapp ? String(row.whatsapp).trim() : '';
+        const waClean = waText.replace(/\D/g, '');
+        const waButton = waText ? 
+          `<a href="https://wa.me/${waClean.startsWith('2') ? waClean : (waClean.length === 10 || waClean.length === 11 ? '20' + waClean : waClean)}" target="_blank" class="inline-flex items-center gap-1.5 text-palette-green hover:text-palette-gold font-mono text-xs dir-ltr whitespace-nowrap font-semibold bg-palette-navy-dark px-2.5 py-1 rounded-lg border border-palette-green/30 transition">
+            <svg class="w-3.5 h-3.5 text-palette-green shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>${waText}</span>
+          </a>` 
+          : `<span class="text-palette-ice-muted">-</span>`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-palette-navy-light/40 transition-colors">
+            <td class="py-3.5 px-4 font-bold text-palette-gold font-mono whitespace-nowrap">${row.id || '-'}</td>
+            <td class="py-3.5 px-4 text-palette-ice font-semibold whitespace-nowrap">${row.customerName || '-'}</td>
+            <td class="py-3.5 px-4 whitespace-nowrap">${waButton}</td>
+            <td class="py-3.5 px-4 whitespace-nowrap"><span class="px-2 py-0.5 rounded bg-palette-navy-dark text-palette-ice text-xs border border-palette-navy-light/60">${row.source || '-'}</span></td>
+            <td class="py-3.5 px-4 text-palette-ice-muted whitespace-nowrap">${row.assignedEmployee || '-'}</td>
+            <td class="py-3.5 px-4 text-palette-ice-muted max-w-xs truncate" title="${row.serviceType}">${row.serviceType || '-'}</td>
+            <td class="py-3.5 px-4 font-bold text-palette-ice whitespace-nowrap">${formatCurrency(row.totalPrice)}</td>
+            <td class="py-3.5 px-4 text-palette-green whitespace-nowrap">${formatCurrency(row.paidAmount)}</td>
+            <td class="py-3.5 px-4 text-palette-orange whitespace-nowrap">${formatCurrency(row.remainingAmount)}</td>
+            <td class="py-3.5 px-4 whitespace-nowrap"><span class="inline-block px-3 py-1 rounded-full border text-xs font-semibold whitespace-nowrap ${delBadge}">${row.deliveryStatus || '-'}</span></td>
+            <td class="py-3.5 px-4 whitespace-nowrap"><span class="inline-block px-3 py-1 rounded-full border text-xs font-semibold whitespace-nowrap ${payBadge}">${row.paymentStatus || '-'}</span></td>
+            <td class="py-3.5 px-4 text-center whitespace-nowrap">
+              <button onclick="openModal(${idx})" class="p-1.5 rounded-lg bg-palette-gold/20 hover:bg-palette-gold/30 text-palette-gold border border-palette-gold/40 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Modal Actions
+    function openModal(index) {
+      const row = rawGridViewData[index];
+      if (!row) return;
+
+      document.getElementById('modal-id-badge').textContent = row.id || 'N/A';
+      document.getElementById('modal-customer-name').textContent = row.customerName || 'بدون اسم';
+
+      const content = document.getElementById('modal-content');
+      content.innerHTML = `
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">تاريخ الحجز</span>
+          <span class="font-bold text-palette-ice">${row.bookingDate || '-'}</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">تاريخ الاستلام</span>
+          <span class="font-bold text-palette-ice">${row.deliveryDate || '-'}</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">رقم الواتساب</span>
+          <span class="font-bold text-palette-ice dir-ltr">${row.whatsapp || '-'}</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">مصدر العميل</span>
+          <span class="font-bold text-palette-ice">${row.source || '-'}</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">موظف التسليم / مسؤول الديل</span>
+          <span class="font-bold text-palette-ice">${row.assignedEmployee || '-'}</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-slate-400 block mb-1">موظف المتابعة الإضافي</span>
+          <span class="font-bold text-palette-ice">${row.responsibleEmployee || '-'}</span>
+        </div>
+        <div class="col-span-2 bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">نوع الخدمة المقدمة</span>
+          <span class="font-bold text-palette-ice">${row.serviceType || '-'}</span>
+        </div>
+        <div class="col-span-2 bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">مواصفات الخدمة</span>
+          <span class="font-bold text-palette-ice">${row.serviceSpecs || '-'}</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">إجمالي سعر الخدمة</span>
+          <span class="font-extrabold text-palette-gold text-base">${formatCurrency(row.totalPrice)} ج.م</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">المبلغ المدفوع</span>
+          <span class="font-extrabold text-palette-green text-base">${formatCurrency(row.paidAmount)} ج.م</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">المبلغ المتبقي</span>
+          <span class="font-extrabold text-palette-orange text-base">${formatCurrency(row.remainingAmount)} ج.م</span>
+        </div>
+        <div class="bg-palette-navy-dark/80 p-3 rounded-xl border border-palette-navy-light/60">
+          <span class="text-xs text-palette-ice-muted block mb-1">حالة المدفوعات</span>
+          <span class="font-bold text-palette-ice">${row.paymentStatus || '-'}</span>
+        </div>
+      `;
+
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

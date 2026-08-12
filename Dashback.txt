@@ -1,0 +1,148 @@
+/**
+ * Google Apps Script Backend Code for CRM Dashboard & GridView
+ * Copy this code into your Code.gs file in Google Apps Script.
+ */
+
+function doGet(e) {
+  return HtmlService.createTemplateFromFile('Dashui')
+    .evaluate()
+    .setTitle('Dashboard & Grid View')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function getSpreadsheet() {
+  const SPREADSHEET_ID = "10RifInemGhayL-iBZjwDc-kx0bO5h3kkMb6vNN6HRWI";
+  try {
+    return SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(SPREADSHEET_ID);
+  } catch (err) {
+    return SpreadsheetApp.openById(SPREADSHEET_ID);
+  }
+}
+
+/**
+ * Fetch initial dataset for both Dashboard and GridView
+ */
+function getInitialData() {
+  return {
+    dashboard: getDashboardData(),
+    gridView: getGridViewData()
+  };
+}
+
+/**
+ * Reads data from 'DashBoard' sheet
+ */
+function getDashboardData() {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName('DashBoard');
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  
+  // Delivery Statuses (Cols A & B)
+  const deliveryStatuses = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] && data[i][0].toString().trim() !== '') {
+      deliveryStatuses.push({
+        label: data[i][0].toString().trim(),
+        count: Number(data[i][1]) || 0
+      });
+    }
+  }
+
+  // Payment Statuses & Metrics (Cols C & D)
+  const paymentStatuses = [];
+  const financialSummary = {};
+  for (let i = 1; i < data.length; i++) {
+    const label = data[i][2] ? data[i][2].toString().trim() : '';
+    const val = data[i][3];
+    if (label) {
+      if (label.includes('اجمالي') || label.includes('إجمالي')) {
+        financialSummary[label] = Number(val) || 0;
+      } else {
+        paymentStatuses.push({
+          label: label,
+          count: Number(val) || 0
+        });
+      }
+    }
+  }
+
+  // Client Acquisition Statuses (Cols E & F)
+  const clientSources = [];
+  let totalClients = 0;
+  for (let i = 1; i < data.length; i++) {
+    const label = data[i][4] ? data[i][4].toString().trim() : '';
+    const val = Number(data[i][5]) || 0;
+    if (label) {
+      if (label.includes('إجمالي عدد العملاء') || label.includes('اجمالي عدد العملاء')) {
+        totalClients = val;
+      } else {
+        clientSources.push({
+          label: label,
+          count: val
+        });
+      }
+    }
+  }
+
+  return {
+    deliveryStatuses: deliveryStatuses,
+    paymentStatuses: paymentStatuses,
+    financialSummary: financialSummary,
+    clientSources: clientSources,
+    totalClients: totalClients
+  };
+}
+
+/**
+ * Reads data from 'Grid_View' sheet
+ */
+function getGridViewData() {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName('Grid_View');
+  if (!sheet) return [];
+
+  // Use getDisplayValues() so phone numbers and formatted numbers are preserved exactly as displayed in the sheet!
+  const displayValues = sheet.getDataRange().getDisplayValues();
+  const rawValues = sheet.getDataRange().getValues();
+
+  if (displayValues.length <= 1) return [];
+
+  const rows = [];
+
+  for (let i = 1; i < displayValues.length; i++) {
+    const dispRow = displayValues[i];
+    const rawRow = rawValues[i];
+
+    if (!dispRow[0] && !dispRow[3]) continue; // Skip blank rows
+
+    const formatDate = (val) => {
+      if (val instanceof Date) {
+        return Utilities.formatDate(val, ss.getSpreadsheetTimeZone(), "yyyy-MM-dd");
+      }
+      return val ? val.toString().trim() : "";
+    };
+
+    rows.push({
+      id: dispRow[0] ? dispRow[0].toString().trim() : "",
+      bookingDate: formatDate(rawRow[1]),
+      deliveryDate: formatDate(rawRow[2]),
+      customerName: dispRow[3] ? dispRow[3].toString().trim() : "",
+      whatsapp: dispRow[4] ? dispRow[4].toString().trim() : (rawRow[4] ? String(rawRow[4]).trim() : ""),
+      source: dispRow[5] ? dispRow[5].toString().trim() : "",
+      assignedEmployee: dispRow[6] ? dispRow[6].toString().trim() : "",
+      responsibleEmployee: dispRow[7] ? dispRow[7].toString().trim() : "",
+      serviceType: dispRow[8] ? dispRow[8].toString().trim() : "",
+      serviceSpecs: dispRow[9] ? dispRow[9].toString().trim() : "",
+      totalPrice: Number(rawRow[10]) || 0,
+      paidAmount: Number(rawRow[11]) || 0,
+      remainingAmount: Number(rawRow[12]) || 0,
+      deliveryStatus: dispRow[13] ? dispRow[13].toString().trim() : "",
+      paymentStatus: dispRow[14] ? dispRow[14].toString().trim() : ""
+    });
+  }
+
+  return rows;
+}
