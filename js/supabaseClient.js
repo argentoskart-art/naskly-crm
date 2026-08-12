@@ -28,7 +28,7 @@ var db = {
  */
 async function generateNextClientId() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('clients')
       .select('id')
       .order('created_at', { ascending: false });
@@ -62,8 +62,8 @@ async function getBootstrapData() {
 
   try {
     const [teamRes, serviceRes] = await Promise.all([
-      supabase.from('team_members').select('name'),
-      supabase.from('services').select('name')
+      db.from('team_members').select('name'),
+      db.from('services').select('name')
     ]);
 
     if (teamRes.data && teamRes.data.length > 0) {
