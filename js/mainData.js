@@ -46,47 +46,89 @@ async function initForm() {
     deliveryStaffSelect.innerHTML += `<option value="${member}">${member}</option>`;
   });
 
-  // Attach click events to initial static chips or dynamic ones
-  setupServiceChips(bootstrap.services);
+  // Initialize Searchable Multi-Select Service Input
+  setupSearchableServiceInput(bootstrap.services);
 
   // Generate initial Auto ID
   const nextId = await generateNextClientId();
   document.getElementById('id').value = nextId;
 }
 
-function setupServiceChips(servicesList) {
-  const serviceChipsContainer = document.getElementById('serviceChips');
+let availableServicesList = [];
+
+function setupSearchableServiceInput(servicesList) {
+  availableServicesList = servicesList || ['المعاصر 1', 'المعاصر 2', 'باقة 800 سلايد'];
   
-  if (servicesList && servicesList.length > 0) {
-    serviceChipsContainer.innerHTML = '';
-    servicesList.forEach(service => {
-      const chip = document.createElement('div');
-      chip.className = 'chip';
-      chip.textContent = service;
-      serviceChipsContainer.appendChild(chip);
-    });
+  const searchInput = document.getElementById('serviceSearchInput');
+  const dropdown = document.getElementById('serviceDropdown');
+
+  // Input listener for filtering autocomplete recommendations
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim().toLowerCase();
+    renderDropdown(query);
+  });
+
+  // Focus listener to display recommendations
+  searchInput.addEventListener('focus', () => {
+    renderDropdown(searchInput.value.trim().toLowerCase());
+  });
+
+  // Hide dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.multi-search-container')) {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  renderSelectedTags();
+}
+
+function renderDropdown(query) {
+  const dropdown = document.getElementById('serviceDropdown');
+  dropdown.innerHTML = '';
+
+  const filtered = availableServicesList.filter(service => {
+    return service.toLowerCase().includes(query) && !selectedServices.has(service);
+  });
+
+  if (filtered.length === 0) {
+    dropdown.style.display = 'none';
+    return;
   }
 
-  // Bind click listener on all chips in the container
-  document.querySelectorAll('#serviceChips .chip').forEach(chip => {
-    // Clone to remove duplicate listeners
-    const newChip = chip.cloneNode(true);
-    chip.parentNode.replaceChild(newChip, chip);
-
-    const serviceName = newChip.textContent.trim();
-    if (selectedServices.has(serviceName)) {
-      newChip.classList.add('selected');
-    }
-
-    newChip.addEventListener('click', () => {
-      if (selectedServices.has(serviceName)) {
-        selectedServices.delete(serviceName);
-        newChip.classList.remove('selected');
-      } else {
-        selectedServices.add(serviceName);
-        newChip.classList.add('selected');
-      }
+  filtered.forEach(service => {
+    const item = document.createElement('div');
+    item.className = 'search-dropdown-item';
+    item.textContent = service;
+    item.addEventListener('click', () => {
+      selectedServices.add(service);
+      document.getElementById('serviceSearchInput').value = '';
+      dropdown.style.display = 'none';
+      renderSelectedTags();
     });
+    dropdown.appendChild(item);
+  });
+
+  dropdown.style.display = 'block';
+}
+
+function renderSelectedTags() {
+  const container = document.getElementById('selectedServicesTags');
+  container.innerHTML = '';
+
+  selectedServices.forEach(service => {
+    const tag = document.createElement('div');
+    tag.className = 'chip selected';
+    tag.innerHTML = `
+      <span>${service}</span>
+      <span class="chip-remove" title="إزالة">&times;</span>
+    `;
+    tag.querySelector('.chip-remove').addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedServices.delete(service);
+      renderSelectedTags();
+    });
+    container.appendChild(tag);
   });
 }
 
@@ -145,17 +187,13 @@ async function handleSearch() {
     document.getElementById('delivery_status').value = data.delivery_status || 'لم تبدأ بعد';
     document.getElementById('payment_status').value = data.payment_status || 'لم يتم استلام مبالغ';
 
-    // Update Services Chips
+    // Update Services Chips & Tags
     selectedServices.clear();
     const activeServices = (data.service_type || '').split(',').map(s => s.trim());
-    document.querySelectorAll('#serviceChips .chip').forEach(chip => {
-      if (activeServices.includes(chip.textContent)) {
-        selectedServices.add(chip.textContent);
-        chip.classList.add('selected');
-      } else {
-        chip.classList.remove('selected');
-      }
+    activeServices.forEach(srv => {
+      if (srv) selectedServices.add(srv);
     });
+    renderSelectedTags();
 
   } catch (err) {
     console.error('Search error:', err);
@@ -194,7 +232,7 @@ async function handleFormSubmit(e) {
       payment_status: document.getElementById('payment_status').value
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('clients')
       .upsert([payload], { onConflict: 'id' });
 
@@ -215,7 +253,7 @@ async function handleFormSubmit(e) {
 async function resetForm() {
   document.getElementById('clientForm').reset();
   selectedServices.clear();
-  document.querySelectorAll('#serviceChips .chip').forEach(chip => chip.classList.remove('selected'));
+  renderSelectedTags();
   document.getElementById('formCardTitle').textContent = 'إضافة / تعديل بيانات عميل';
   document.getElementById('searchMessage').textContent = '';
   document.getElementById('searchInput').value = '';

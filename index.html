@@ -95,12 +95,12 @@
           </div>
 
           <div class="form-group" style="grid-column: span 2;">
-            <label>نوع الخدمة المقدمة (يمكن اختيار أكثر من خدمة)</label>
-            <div id="serviceChips" class="chip-container">
-              <div class="chip">المعاصر 1</div>
-              <div class="chip">المعاصر 2</div>
-              <div class="chip">باقة 800 سلايد</div>
+            <label>نوع الخدمة المقدمة (ابحث واختر خدمة أو أكثر)</label>
+            <div class="multi-search-container" style="position: relative;">
+              <input type="text" id="serviceSearchInput" class="form-control" placeholder="ابحث أو اختر خدمة..." autocomplete="off">
+              <div id="serviceDropdown" class="search-dropdown" style="display: none;"></div>
             </div>
+            <div id="selectedServicesTags" class="chip-container" style="margin-top: 10px;"></div>
           </div>
 
           <div class="form-group" style="grid-column: span 2;">
