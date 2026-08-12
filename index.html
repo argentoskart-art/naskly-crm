@@ -75,17 +75,31 @@
 
           <div class="form-group">
             <label>الموظف المسؤول عن الديل</label>
-            <select id="deal_owner" class="form-control"></select>
+            <select id="deal_owner" class="form-control">
+              <option value="">اختر الموظف...</option>
+              <option value="مهند">مهند</option>
+              <option value="إسلام">إسلام</option>
+              <option value="عمرو">عمرو</option>
+            </select>
           </div>
 
           <div class="form-group">
             <label>موظف التسليم</label>
-            <select id="delivery_staff" class="form-control"></select>
+            <select id="delivery_staff" class="form-control">
+              <option value="">اختر الموظف...</option>
+              <option value="مهند">مهند</option>
+              <option value="إسلام">إسلام</option>
+              <option value="عمرو">عمرو</option>
+            </select>
           </div>
 
           <div class="form-group" style="grid-column: span 2;">
             <label>نوع الخدمة المقدمة (يمكن اختيار أكثر من خدمة)</label>
-            <div id="serviceChips" class="chip-container"></div>
+            <div id="serviceChips" class="chip-container">
+              <div class="chip">المعاصر 1</div>
+              <div class="chip">المعاصر 2</div>
+              <div class="chip">باقة 800 سلايد</div>
+            </div>
           </div>
 
           <div class="form-group" style="grid-column: span 2;">
