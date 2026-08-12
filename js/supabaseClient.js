@@ -84,3 +84,107 @@ async function getBootstrapData() {
     services: services
   };
 }
+
+/**
+ * Universal Global Notification Bell & Modal System
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  initNotificationBell();
+});
+
+async function initNotificationBell() {
+  const bellBtn = document.getElementById('reminderBellBtn');
+  const modal = document.getElementById('reminderModal');
+  const closeBtn = document.getElementById('closeReminderModal');
+
+  if (!bellBtn || !modal) return;
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+  }
+
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  bellBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+  });
+
+  // Fetch reminders due tomorrow with open statuses
+  try {
+    const { data: clients, error } = await db
+      .from('clients')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+
+    const openStatuses = ['لم تبدأ بعد', 'جزئي'];
+    const matchingRows = (clients || []).filter(c => {
+      return c.delivery_date === tomorrowStr && openStatuses.includes(c.delivery_status);
+    });
+
+    const badge = document.getElementById('bellBadgeCount');
+    const tbody = document.getElementById('reminderModalTbody');
+
+    if (matchingRows.length > 0) {
+      if (badge) {
+        badge.textContent = matchingRows.length;
+        badge.style.display = 'inline-block';
+      }
+
+      if (tbody) {
+        tbody.innerHTML = matchingRows.map(client => {
+          const whatsappClean = (client.whatsapp || '').replace(/[^0-9]/g, '');
+          const whatsappLink = whatsappClean ? `https://wa.me/${whatsappClean.startsWith('0') ? '2' + whatsappClean : whatsappClean}` : '#';
+
+          return `
+            <tr>
+              <td><strong>${client.id || ''}</strong></td>
+              <td>${client.client_name || ''}</td>
+              <td>${client.delivery_date || '-'}</td>
+              <td><span class="badge badge-pending">${client.delivery_status || ''}</span></td>
+              <td>
+                <a href="${whatsappLink}" target="_blank" style="color: var(--palette-gold); text-decoration: none;">
+                  ${client.whatsapp || ''} 📲
+                </a>
+              </td>
+              <td style="color: #ef4444; font-weight: bold;">${(parseFloat(client.remaining) || 0).toLocaleString()} ج.م</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Auto popup once if not seen today
+      const todayKey = new Date().toISOString().slice(0, 10);
+      if (localStorage.getItem('naskly_seen_reminder_date') !== todayKey) {
+        modal.style.display = 'flex';
+        localStorage.setItem('naskly_seen_reminder_date', todayKey);
+      }
+
+    } else {
+      if (badge) badge.style.display = 'none';
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:15px; color:var(--palette-ice-muted);">
+              🎉 لا يوجد عملاء مستحق تسليمهم غداً حالياً.
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+  } catch (err) {
+    console.warn('Error loading bell notifications:', err);
+  }
+}
