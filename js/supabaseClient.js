@@ -46,22 +46,33 @@ async function getBootstrapData() {
       supabase.from('services').select('name')
     ]);
 
-    const team = (teamRes.data || []).map(t => t.name);
-    const services = (serviceRes.data || []).map(s => s.name);
+    let teams = (teamRes.data || []).map(t => t.name);
+    let services = (serviceRes.data || []).map(s => s.name);
+
+    // Fallback to local JSON files if database tables are empty
+    if (!teams.length) {
+      const jsonRes = await fetch('data/employees.json').then(r => r.json()).catch(() => []);
+      teams = jsonRes.map(e => e.name);
+    }
+
+    if (!services.length) {
+      const jsonRes = await fetch('data/services.json').then(r => r.json()).catch(() => []);
+      services = jsonRes.map(s => s.name);
+    }
 
     return {
       statuses: ['لم تبدأ بعد', 'جزئي', 'تم بالكامل'],
       sources: ['WhatsApp', 'FaceBook'],
-      teams: team.length ? team : ['أحمد', 'محمد', 'محمود', 'سارة'],
-      services: services.length ? services : ['تصميم هوية بصرية', 'إدارة حملات إعلانية', 'تطوير موقع إلكتروني', 'إنتاج فيديو موشن جرافيك']
+      teams: teams.length ? teams : ['مهند', 'إسلام', 'عمرو'],
+      services: services.length ? services : ['المعاصر 1', 'المعاصر 2', 'باقة 800 سلايد']
     };
   } catch (err) {
     console.error('Error fetching bootstrap data:', err);
     return {
       statuses: ['لم تبدأ بعد', 'جزئي', 'تم بالكامل'],
       sources: ['WhatsApp', 'FaceBook'],
-      teams: ['أحمد', 'محمد', 'محمود', 'سارة'],
-      services: ['تصميم هوية بصرية', 'إدارة حملات إعلانية', 'تطوير موقع إلكتروني', 'إنتاج فيديو موشن جرافيك']
+      teams: ['مهند', 'إسلام', 'عمرو'],
+      services: ['المعاصر 1', 'المعاصر 2', 'باقة 800 سلايد']
     };
   }
 }
