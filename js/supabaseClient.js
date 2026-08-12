@@ -40,39 +40,30 @@ async function generateNextClientId() {
  * Fetch initial options (Team Members and Services)
  */
 async function getBootstrapData() {
+  let teams = ['مهند', 'إسلام', 'عمرو'];
+  let services = ['المعاصر 1', 'المعاصر 2', 'باقة 800 سلايد'];
+
   try {
     const [teamRes, serviceRes] = await Promise.all([
       supabase.from('team_members').select('name'),
       supabase.from('services').select('name')
     ]);
 
-    let teams = (teamRes.data || []).map(t => t.name);
-    let services = (serviceRes.data || []).map(s => s.name);
-
-    // Fallback to local JSON files if database tables are empty
-    if (!teams.length) {
-      const jsonRes = await fetch('data/employees.json').then(r => r.json()).catch(() => []);
-      teams = jsonRes.map(e => e.name);
+    if (teamRes.data && teamRes.data.length > 0) {
+      teams = teamRes.data.map(t => t.name).filter(Boolean);
     }
-
-    if (!services.length) {
-      const jsonRes = await fetch('data/services.json').then(r => r.json()).catch(() => []);
-      services = jsonRes.map(s => s.name);
+    
+    if (serviceRes.data && serviceRes.data.length > 0) {
+      services = serviceRes.data.map(s => s.name).filter(Boolean);
     }
-
-    return {
-      statuses: ['لم تبدأ بعد', 'جزئي', 'تم بالكامل'],
-      sources: ['WhatsApp', 'FaceBook'],
-      teams: teams.length ? teams : ['مهند', 'إسلام', 'عمرو'],
-      services: services.length ? services : ['المعاصر 1', 'المعاصر 2', 'باقة 800 سلايد']
-    };
   } catch (err) {
-    console.error('Error fetching bootstrap data:', err);
-    return {
-      statuses: ['لم تبدأ بعد', 'جزئي', 'تم بالكامل'],
-      sources: ['WhatsApp', 'FaceBook'],
-      teams: ['مهند', 'إسلام', 'عمرو'],
-      services: ['المعاصر 1', 'المعاصر 2', 'باقة 800 سلايد']
-    };
+    console.warn('Using default employee & service lists:', err);
   }
+
+  return {
+    statuses: ['لم تبدأ بعد', 'جزئي', 'تم بالكامل'],
+    sources: ['WhatsApp', 'FaceBook'],
+    teams: teams,
+    services: services
+  };
 }
