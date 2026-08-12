@@ -29,6 +29,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Reset Form
   document.getElementById('resetBtn').addEventListener('click', resetForm);
+
+  // Check URL query parameters for edit action from dashboard
+  const urlParams = new URLSearchParams(window.location.search);
+  const editId = urlParams.get('id');
+  if (editId) {
+    document.getElementById('searchInput').value = editId;
+    await handleSearch();
+  }
 });
 
 async function initForm() {
