@@ -145,9 +145,9 @@ function updateServiceRowVisual(index) {
   const statusText = row.querySelector('[data-service-status-text]');
   const statusDot = row.querySelector('[data-service-status-dot]');
 
-  if (priceInput) priceInput.value = item.price.toFixed(2);
-  if (paidInput) paidInput.value = item.paid.toFixed(2);
-  if (remainingInput) remainingInput.value = item.remaining.toFixed(2);
+  if (priceInput) priceInput.value = Math.round(item.price);
+  if (paidInput) paidInput.value = Math.round(item.paid);
+  if (remainingInput) remainingInput.value = Math.round(item.remaining);
   if (statusText) statusText.textContent = item.delivery_status;
   if (statusDot) {
     statusDot.className = `service-status-dot ${item.delivery_status === 'استلم' ? 'is-received' : 'is-pending'}`;
@@ -185,9 +185,9 @@ function updatePaymentSummary() {
   const paymentStatus = document.getElementById('payment_status');
   const deliveryStatus = document.getElementById('delivery_status');
 
-  if (totalInput) totalInput.value = totals.total.toFixed(2);
-  if (paidInput) paidInput.value = totals.paid.toFixed(2);
-  if (remainingInput) remainingInput.value = totals.remaining.toFixed(2);
+  if (totalInput) totalInput.value = Math.round(totals.total);
+  if (paidInput) paidInput.value = Math.round(totals.paid);
+  if (remainingInput) remainingInput.value = Math.round(totals.remaining);
   if (paymentStatus) paymentStatus.value = totals.paymentStatus;
   if (deliveryStatus) deliveryStatus.value = totals.deliveryStatus;
 
@@ -225,7 +225,7 @@ function renderServiceItems() {
       <div class="service-breakdown-fields">
         <label class="service-breakdown-field">
           <span>السعر</span>
-          <input type="number" class="form-control" min="0" step="0.01" value="${item.price.toFixed(2)}" data-service-index="${index}" data-service-field="price">
+          <input type="number" class="form-control" min="0" step="1" value="${Math.round(item.price)}" data-service-index="${index}" data-service-field="price">
         </label>
         <label class="service-breakdown-field">
           <span>التسليم</span>
@@ -236,11 +236,11 @@ function renderServiceItems() {
         </label>
         <label class="service-breakdown-field">
           <span>المدفوع</span>
-          <input type="number" class="form-control" min="0" step="0.01" value="${item.paid.toFixed(2)}" data-service-index="${index}" data-service-field="paid">
+          <input type="number" class="form-control" min="0" step="1" value="${Math.round(item.paid)}" data-service-index="${index}" data-service-field="paid">
         </label>
         <label class="service-breakdown-field">
           <span>المتبقي</span>
-          <input type="number" class="form-control" value="${item.remaining.toFixed(2)}" data-service-field="remaining" readonly>
+          <input type="number" class="form-control" value="${Math.round(item.remaining)}" data-service-field="remaining" readonly>
         </label>
       </div>
     </div>
