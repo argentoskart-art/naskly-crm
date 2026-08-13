@@ -248,6 +248,19 @@ function renderServiceItems() {
 
   container.querySelectorAll('[data-service-field="price"], [data-service-field="paid"]').forEach(input => {
     input.addEventListener('input', handleServiceFieldChange);
+    input.addEventListener('focus', function () {
+      if (this.value === '0' || this.value === '0.00') {
+        this.value = '';
+      } else {
+        this.select();
+      }
+    });
+    input.addEventListener('blur', function () {
+      if (this.value.trim() === '') {
+        this.value = '0';
+        handleServiceFieldChange({ target: this });
+      }
+    });
   });
   container.querySelectorAll('[data-service-field="delivery_status"]').forEach(select => {
     select.addEventListener('change', handleServiceFieldChange);
