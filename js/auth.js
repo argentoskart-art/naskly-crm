@@ -12,10 +12,34 @@ async function hashString(str) {
 // Redirect protection check on protected pages
 (function checkAuthGuard() {
   const isLoginPage = window.location.pathname.endsWith('login.html');
-  const sessionToken = sessionStorage.getItem('naskly_auth_session');
+  const sessionUserJson = sessionStorage.getItem('naskly_auth_user');
 
-  if (!isLoginPage && !sessionToken) {
+  if (!isLoginPage && !sessionUserJson) {
     window.location.href = 'login.html';
+    return;
+  }
+
+  if (sessionUserJson) {
+    try {
+      const user = JSON.parse(sessionUserJson);
+      const isSettingsPage = window.location.pathname.endsWith('settings.html');
+      
+      // Hide settings nav link if user is not admin
+      document.addEventListener('DOMContentLoaded', () => {
+        const settingsNavBtn = document.querySelector('a[href="settings.html"]');
+        if (settingsNavBtn && user.role !== 'admin') {
+          settingsNavBtn.style.display = 'none';
+        }
+      });
+
+      // Block non-admin from entering settings.html directly
+      if (isSettingsPage && user.role !== 'admin') {
+        alert('تنبيه: غير مسموح لك بالوصول لصفحة إدارة الفريق والخدمات!');
+        window.location.href = 'index.html';
+      }
+    } catch (e) {
+      console.error('Error parsing session user:', e);
+    }
   }
 })();
 
@@ -24,27 +48,48 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const userVal = document.getElementById('loginUsername').value.trim().toLowerCase();
+      const userVal = document.getElementById('loginUsername').value.trim();
       const passVal = document.getElementById('loginPassword').value.trim();
       const errorEl = document.getElementById('loginError');
 
       errorEl.textContent = 'جاري التحقق...';
       errorEl.style.color = '#06b6d4';
 
-      const userHash = await hashString(userVal);
-      const passHash = await hashString(passVal);
+      try {
+        // First check in Supabase app_users table
+        let matchedUser = null;
+        if (window.db && typeof window.db.from === 'function') {
+          const { data, error } = await db
+            .from('app_users')
+            .select('*')
+            .eq('username', userVal)
+            .eq('password', passVal);
 
-      console.log("User hash:", userHash);
-      console.log("Pass hash:", passHash);
+          if (!error && data && data.length > 0) {
+            matchedUser = data[0];
+          }
+        }
 
-      const isUserValid = (userVal === 'admin') || (userHash === TARGET_USER_HASH);
-      const isPassValid = (passVal === 'Mohand@1234') || (passHash === TARGET_PASS_HASH);
+        // Hardcoded admin fallback for initial login before table fetch
+        if (!matchedUser && (userVal.toLowerCase() === 'admin') && (passVal === 'Mohand@1234')) {
+          matchedUser = { username: 'admin', role: 'admin', title: 'مدير النظام (مهند)' };
+        }
 
-      if (isUserValid && isPassValid) {
-        sessionStorage.setItem('naskly_auth_session', 'authenticated_user_' + Date.now());
-        window.location.href = 'index.html';
-      } else {
-        errorEl.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
+        if (matchedUser) {
+          sessionStorage.setItem('naskly_auth_session', 'authenticated_user_' + Date.now());
+          sessionStorage.setItem('naskly_auth_user', JSON.stringify({
+            username: matchedUser.username,
+            role: matchedUser.role || 'staff',
+            title: matchedUser.title || 'موظف'
+          }));
+          window.location.href = 'index.html';
+        } else {
+          errorEl.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
+          errorEl.style.color = '#ef4444';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        errorEl.textContent = 'حدث خطأ أثناء الاتصال بالخادم!';
         errorEl.style.color = '#ef4444';
       }
     });

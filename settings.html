@@ -117,6 +117,42 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- User Roles & Accounts Management -->
+    <div class="card">
+      <div class="card-title">إدارة حسابات وصلاحيات المستخدين (إضافة / تعديل / حذف)</div>
+      
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; max-width: 800px; margin-bottom: 1.5rem;">
+        <input type="text" id="usernameInput" class="form-control" placeholder="اسم المستخدم (Username)..." style="max-width: 200px;">
+        <input type="password" id="passwordInput" class="form-control" placeholder="كلمة المرور..." style="max-width: 180px;">
+        <input type="text" id="userTitleInput" class="form-control" placeholder="المسمى الوظيفي..." style="max-width: 180px;">
+        <select id="userRoleSelect" class="form-control" style="max-width: 150px;">
+          <option value="staff">موظف (مستكشف)</option>
+          <option value="admin">مدير نظام (Admin)</option>
+        </select>
+        <button id="addUserBtn" class="btn btn-primary">إضافة حساب</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>اسم المستخدم</th>
+              <th>المسمى الوظيفي</th>
+              <th>الصلاحية (Role)</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 15px;">جاري التحميل...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
   </div>

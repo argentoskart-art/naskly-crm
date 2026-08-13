@@ -50,10 +50,33 @@ function renderDashboardKPIs(clients) {
     totalRemaining += parseFloat(c.remaining) || 0;
   });
 
+  const sessionUserJson = sessionStorage.getItem('naskly_auth_user');
+  let isAdmin = false;
+  try {
+    if (sessionUserJson) {
+      const user = JSON.parse(sessionUserJson);
+      isAdmin = (user.role === 'admin');
+    }
+  } catch (e) {}
+
   document.getElementById('kpiTotalClients').textContent = clients.length;
-  document.getElementById('kpiTotalRevenue').textContent = `${totalRevenue.toLocaleString('ar-EG', {minimumFractionDigits: 2})} ج.م`;
-  document.getElementById('kpiTotalPaid').textContent = `${totalPaid.toLocaleString('ar-EG', {minimumFractionDigits: 2})} ج.م`;
-  document.getElementById('kpiTotalRemaining').textContent = `${totalRemaining.toLocaleString('ar-EG', {minimumFractionDigits: 2})} ج.م`;
+  
+  const revenueCard = document.getElementById('kpiTotalRevenue')?.closest('.kpi-card');
+  const paidCard = document.getElementById('kpiTotalPaid')?.closest('.kpi-card');
+  const remainingCard = document.getElementById('kpiTotalRemaining')?.closest('.kpi-card');
+
+  if (isAdmin) {
+    if (revenueCard) revenueCard.style.display = 'block';
+    if (paidCard) paidCard.style.display = 'block';
+    if (remainingCard) remainingCard.style.display = 'block';
+    document.getElementById('kpiTotalRevenue').textContent = `${Math.round(totalRevenue).toLocaleString()} ج.م`;
+    document.getElementById('kpiTotalPaid').textContent = `${Math.round(totalPaid).toLocaleString()} ج.م`;
+    document.getElementById('kpiTotalRemaining').textContent = `${Math.round(totalRemaining).toLocaleString()} ج.م`;
+  } else {
+    if (revenueCard) revenueCard.style.display = 'none';
+    if (paidCard) paidCard.style.display = 'none';
+    if (remainingCard) remainingCard.style.display = 'none';
+  }
 }
 
 function renderGridTable(clients) {
