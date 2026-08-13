@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>إدخال بيانات العملاء | Naskly CRM</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/service-breakdown.css">
   <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Authentication Protection Guard -->
@@ -135,12 +136,14 @@
           </div>
 
           <div class="form-group" style="grid-column: span 2;">
-            <label>نوع الخدمة المقدمة (ابحث واختر خدمة أو أكثر)</label>
+            <label>الخدمات المقدمة (أضف كل خدمة ثم أدخل سعرها وحالتها ومدفوعاتها)</label>
             <div class="multi-search-container" style="position: relative;">
               <input type="text" id="serviceSearchInput" class="form-control" placeholder="ابحث أو اختر خدمة..." autocomplete="off">
               <div id="serviceDropdown" class="search-dropdown" style="display: none;"></div>
             </div>
-            <div id="selectedServicesTags" class="chip-container" style="margin-top: 10px;"></div>
+            <div id="serviceItemsContainer" class="service-breakdown-list" aria-live="polite">
+              <div class="service-breakdown-empty">لم تتم إضافة خدمات بعد. ابحث عن خدمة بالأعلى لإضافتها.</div>
+            </div>
           </div>
 
           <div class="form-group" style="grid-column: span 2;">
@@ -149,23 +152,23 @@
           </div>
 
           <div class="form-group">
-            <label>السعر الإجمالي للخدمة</label>
-            <input type="number" id="total_price" class="form-control" min="0" step="0.01" value="0">
+            <label>السعر الإجمالي للخدمات</label>
+            <input type="number" id="total_price" class="form-control" min="0" step="0.01" value="0" readonly>
           </div>
 
           <div class="form-group">
-            <label>المدفوع</label>
-            <input type="number" id="paid" class="form-control" min="0" step="0.01" value="0">
+            <label>إجمالي المدفوع</label>
+            <input type="number" id="paid" class="form-control" min="0" step="0.01" value="0" readonly>
           </div>
 
           <div class="form-group">
-            <label>المتبقي</label>
+            <label>إجمالي المتبقي</label>
             <input type="number" id="remaining" class="form-control" readonly value="0">
           </div>
 
           <div class="form-group">
-            <label>حالة التسليم</label>
-            <select id="delivery_status" class="form-control">
+            <label>حالة التسليم الإجمالية</label>
+            <select id="delivery_status" class="form-control" disabled>
               <option value="لم تبدأ بعد">لم تبدأ بعد</option>
               <option value="جزئي">جزئي</option>
               <option value="تم بالكامل">تم بالكامل</option>
@@ -173,19 +176,31 @@
           </div>
 
           <div class="form-group">
-            <label>حالة المدفوعات</label>
-            <select id="payment_status" class="form-control">
+            <label>حالة المدفوعات الإجمالية</label>
+            <select id="payment_status" class="form-control" disabled>
               <option value="لم يتم استلام مبالغ">لم يتم استلام مبالغ</option>
               <option value="جزئي">جزئي</option>
               <option value="تم بالكامل">تم بالكامل</option>
             </select>
           </div>
 
+          <div class="service-payment-summary" id="servicePaymentSummary" style="grid-column: span 2;">
+            <div class="service-payment-summary-heading">
+              <strong>ملخص المدفوعات حسب الخدمات</strong>
+              <span id="serviceSummaryCount">0 خدمة</span>
+            </div>
+            <div class="service-payment-summary-grid">
+              <div><span>الإجمالي</span><strong id="serviceSummaryTotal">0.00 ج.م</strong></div>
+              <div><span>المدفوع</span><strong id="serviceSummaryPaid">0.00 ج.م</strong></div>
+              <div><span>المتبقي</span><strong id="serviceSummaryRemaining">0.00 ج.م</strong></div>
+            </div>
+          </div>
+
         </div>
 
         <div style="margin-top: 1.5rem; display: flex; gap: 12px;">
           <button type="submit" id="saveBtn" class="btn btn-primary">حفظ البيانات</button>
-          <button type="button" id="resetBtn" class="btn btn-secondary">إعادة ضبط Form</button>
+          <button type="button" id="resetBtn" class="btn btn-secondary">إعادة ضبط النموذج</button>
         </div>
       </form>
     </div>

@@ -1,4 +1,4 @@
--- Supabase Database Schema for Naskly CRM
+-- Naskly CRM Supabase Database Schema
 
 -- 1. Create Clients Table
 CREATE TABLE IF NOT EXISTS public.clients (
@@ -11,8 +11,9 @@ CREATE TABLE IF NOT EXISTS public.clients (
     source TEXT DEFAULT 'WhatsApp',
     deal_owner TEXT,
     delivery_staff TEXT,
-    service_type TEXT, -- Comma-separated or string list
+    service_type TEXT, -- Comma-separated display names for compatibility
     service_specs TEXT,
+    service_items JSONB DEFAULT '[]'::jsonb, -- Per-service price/status/paid/remaining breakdown
     total_price NUMERIC(12,2) DEFAULT 0,
     paid NUMERIC(12,2) DEFAULT 0,
     remaining NUMERIC(12,2) DEFAULT 0,
@@ -34,25 +35,28 @@ CREATE TABLE IF NOT EXISTS public.services (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Enable Row Level Security (RLS)
+-- 4. Add structured service data to existing installations without recreating the table
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS service_items JSONB DEFAULT '[]'::jsonb;
+
+-- 5. Enable Row Level Security (RLS)
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 
--- 5. Open Access Policies (for anonymous public access via anon key)
+-- 6. Open Access Policies (for anonymous public access via anon key)
 CREATE POLICY "Public full access to clients" ON public.clients FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access to team_members" ON public.team_members FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access to services" ON public.services FOR ALL USING (true) WITH CHECK (true);
 
--- 6. Insert Default Team Members & Services
-INSERT INTO public.team_members (name) VALUES 
+-- 7. Insert Default Team Members & Services
+INSERT INTO public.team_members (name) VALUES
     ('أحمد'),
     ('محمد'),
     ('محمود'),
     ('سارة')
 ON CONFLICT (name) DO NOTHING;
 
-INSERT INTO public.services (name) VALUES 
+INSERT INTO public.services (name) VALUES
     ('تصميم هوية بصرية'),
     ('إدارة حملات إعلانية'),
     ('تطوير موقع إلكتروني'),
