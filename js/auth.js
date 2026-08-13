@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const { data, error } = await db
             .from('app_users')
             .select('*')
-            .eq('username', userVal)
+            .ilike('username', userVal)
             .eq('password', passVal);
 
           if (!error && data && data.length > 0) {
