@@ -147,18 +147,48 @@ async function initNotificationBell() {
           const whatsappClean = (client.whatsapp || '').replace(/[^0-9]/g, '');
           const whatsappLink = whatsappClean ? `https://wa.me/${whatsappClean.startsWith('0') ? '2' + whatsappClean : whatsappClean}` : '#';
 
+          let pendingServicesList = [];
+          if (Array.isArray(client.service_items) && client.service_items.length > 0) {
+            pendingServicesList = client.service_items
+              .filter(item => item.delivery_status === 'متسلمش')
+              .map(item => item.name || item.service);
+          } else {
+            const rawSpecs = String(client.service_specs || '');
+            const markerIndex = rawSpecs.lastIndexOf('\n\n[NASKLY_SERVICE_ITEMS]\n');
+            if (markerIndex !== -1) {
+              try {
+                const parsed = JSON.parse(rawSpecs.slice(markerIndex + 26).trim());
+                if (Array.isArray(parsed)) {
+                  pendingServicesList = parsed
+                    .filter(item => item.delivery_status === 'متسلمش')
+                    .map(item => item.name || item.service);
+                }
+              } catch (e) {}
+            }
+          }
+
+          if (pendingServicesList.length === 0 && client.delivery_status !== 'تم بالكامل') {
+            const fallbackName = client.service_type || 'جميع الخدمات';
+            pendingServicesList = [fallbackName];
+          }
+
+          const pendingHtml = pendingServicesList.length > 0
+            ? pendingServicesList.map(s => `<span class="badge" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; font-size: 0.75rem; margin: 2px;">${s}</span>`).join(' ')
+            : '<span style="color: #10b981; font-size: 0.8rem;">كل الخدمات مستلمة</span>';
+
           return `
             <tr>
               <td><strong>${client.id || ''}</strong></td>
               <td>${client.client_name || ''}</td>
               <td>${client.delivery_date || '-'}</td>
               <td><span class="badge badge-pending">${client.delivery_status || ''}</span></td>
+              <td>${pendingHtml}</td>
               <td>
                 <a href="${whatsappLink}" target="_blank" style="color: var(--palette-gold); text-decoration: none;">
                   ${client.whatsapp || ''} 📲
                 </a>
               </td>
-              <td style="color: #ef4444; font-weight: bold;">${(parseFloat(client.remaining) || 0).toLocaleString()} ج.م</td>
+              <td style="color: #ef4444; font-weight: bold;">${Math.round(parseFloat(client.remaining) || 0).toLocaleString()} ج.م</td>
             </tr>
           `;
         }).join('');
@@ -176,7 +206,7 @@ async function initNotificationBell() {
       if (tbody) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align:center; padding:15px; color:var(--palette-ice-muted);">
+            <td colspan="7" style="text-align:center; padding:15px; color:var(--palette-ice-muted);">
               🎉 لا يوجد عملاء مستحق تسليمهم غداً حالياً.
             </td>
           </tr>
