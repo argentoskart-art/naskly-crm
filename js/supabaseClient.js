@@ -130,8 +130,11 @@ async function initNotificationBell() {
 
     const openStatuses = ['لم تبدأ بعد', 'جزئي'];
     const matchingRows = (clients || []).filter(c => {
-      return c.delivery_date === tomorrowStr && openStatuses.includes(c.delivery_status);
+      return c.delivery_date && c.delivery_date <= tomorrowStr && openStatuses.includes(c.delivery_status);
     });
+
+    // Sort by delivery_date ascending (oldest/overdue first)
+    matchingRows.sort((a, b) => (a.delivery_date || '').localeCompare(b.delivery_date || ''));
 
     const badge = document.getElementById('bellBadgeCount');
     const tbody = document.getElementById('reminderModalTbody');
@@ -207,7 +210,7 @@ async function initNotificationBell() {
         tbody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align:center; padding:15px; color:var(--palette-ice-muted);">
-              🎉 لا يوجد عملاء مستحق تسليمهم غداً حالياً.
+              🎉 لا يوجد عملاء مستحق تسليمهم حالياً.
             </td>
           </tr>
         `;

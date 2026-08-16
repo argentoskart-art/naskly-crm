@@ -35,7 +35,7 @@ function getTomorrowDeliveryReminderRows_() {
   values.forEach((row, index) => {
     const deliveryDate = toIsoDate_(row[2]);
     const deliveryStatus = String(row[13] || '').trim();
-    if (deliveryDate === tomorrowKey && openStatuses.has(deliveryStatus)) {
+    if (deliveryDate && deliveryDate <= tomorrowKey && openStatuses.has(deliveryStatus)) {
       rows.push({
         rowNumber: REMINDER_START_ROW + index,
         id: row[0] || '',
