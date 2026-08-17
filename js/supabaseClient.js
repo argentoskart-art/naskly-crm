@@ -218,9 +218,22 @@ function safeEscapeHtml(value) {
 function getPendingServicesList(client) {
   let structuredItems = null;
 
-  if (Array.isArray(client.service_items) && client.service_items.length > 0) {
-    structuredItems = client.service_items;
-  } else {
+  // 1. Check client.service_items (Array or JSON string)
+  if (client.service_items) {
+    if (Array.isArray(client.service_items)) {
+      structuredItems = client.service_items;
+    } else if (typeof client.service_items === 'string') {
+      try {
+        const parsed = JSON.parse(client.service_items);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          structuredItems = parsed;
+        }
+      } catch (e) {}
+    }
+  }
+
+  // 2. Check client.service_specs for JSON marker
+  if (!structuredItems || structuredItems.length === 0) {
     const rawSpecs = String(client.service_specs || '');
     const markerIndex = rawSpecs.lastIndexOf('\n\n[NASKLY_SERVICE_ITEMS]\n');
     if (markerIndex !== -1) {
@@ -233,15 +246,18 @@ function getPendingServicesList(client) {
     }
   }
 
-  // If structured items exist, filter out any item marked as 'استلم'
+  // 3. Filter out any item marked as 'استلم'
   if (structuredItems && structuredItems.length > 0) {
     return structuredItems
-      .filter(item => item.delivery_status !== 'استلم')
+      .filter(item => {
+        const status = String(item.delivery_status || item.deliveryStatus || '').trim();
+        return status !== 'استلم';
+      })
       .map(item => String(item.name || item.service || '').trim())
       .filter(Boolean);
   }
 
-  // Fallback for legacy records without structured service_items
+  // 4. Fallback for legacy records without structured service_items
   if (client.delivery_status !== 'تم بالكامل') {
     const rawType = String(client.service_type || '').trim();
     if (rawType) {
