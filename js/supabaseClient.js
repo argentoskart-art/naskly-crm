@@ -150,45 +150,29 @@ async function initNotificationBell() {
           const whatsappClean = (client.whatsapp || '').replace(/[^0-9]/g, '');
           const whatsappLink = whatsappClean ? `https://wa.me/${whatsappClean.startsWith('0') ? '2' + whatsappClean : whatsappClean}` : '#';
 
-          let pendingServicesList = [];
-          if (Array.isArray(client.service_items) && client.service_items.length > 0) {
-            pendingServicesList = client.service_items
-              .filter(item => item.delivery_status === 'متسلمش')
-              .map(item => item.name || item.service);
-          } else {
-            const rawSpecs = String(client.service_specs || '');
-            const markerIndex = rawSpecs.lastIndexOf('\n\n[NASKLY_SERVICE_ITEMS]\n');
-            if (markerIndex !== -1) {
-              try {
-                const parsed = JSON.parse(rawSpecs.slice(markerIndex + 26).trim());
-                if (Array.isArray(parsed)) {
-                  pendingServicesList = parsed
-                    .filter(item => item.delivery_status === 'متسلمش')
-                    .map(item => item.name || item.service);
-                }
-              } catch (e) {}
-            }
-          }
+          const pendingServices = getPendingServicesList(client);
 
-          if (pendingServicesList.length === 0 && client.delivery_status !== 'تم بالكامل') {
-            const fallbackName = client.service_type || 'جميع الخدمات';
-            pendingServicesList = [fallbackName];
-          }
-
-          const pendingHtml = pendingServicesList.length > 0
-            ? pendingServicesList.map(s => `<span class="badge" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; font-size: 0.75rem; margin: 2px;">${s}</span>`).join(' ')
-            : '<span style="color: #10b981; font-size: 0.8rem;">كل الخدمات مستلمة</span>';
+          const pendingHtml = pendingServices.length > 0
+            ? `<div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; margin: 4px 0;">
+                ${pendingServices.map(s => `
+                  <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 8px; padding: 5px 10px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #fca5a5; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+                    <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background-color: #ef4444; flex-shrink: 0; box-shadow: 0 0 6px #ef4444;"></span>
+                    <span>${safeEscapeHtml(s)}</span>
+                  </div>
+                `).join('')}
+              </div>`
+            : '<span style="color: #10b981; font-size: 0.8rem; font-weight: 500;">✨ كل الخدمات مستلمة</span>';
 
           return `
             <tr>
-              <td><strong>${client.id || ''}</strong></td>
-              <td>${client.client_name || ''}</td>
-              <td>${client.delivery_date || '-'}</td>
-              <td><span class="badge badge-pending">${client.delivery_status || ''}</span></td>
+              <td><strong>${safeEscapeHtml(client.id || '')}</strong></td>
+              <td>${safeEscapeHtml(client.client_name || '')}</td>
+              <td>${safeEscapeHtml(client.delivery_date || '-')}</td>
+              <td><span class="badge badge-pending">${safeEscapeHtml(client.delivery_status || '')}</span></td>
               <td>${pendingHtml}</td>
               <td>
                 <a href="${whatsappLink}" target="_blank" style="color: var(--palette-gold); text-decoration: none;">
-                  ${client.whatsapp || ''} 📲
+                  ${safeEscapeHtml(client.whatsapp || '')} 📲
                 </a>
               </td>
               <td style="color: #ef4444; font-weight: bold;">${Math.round(parseFloat(client.remaining) || 0).toLocaleString()} ج.م</td>
@@ -220,4 +204,51 @@ async function initNotificationBell() {
   } catch (err) {
     console.warn('Error loading bell notifications:', err);
   }
+}
+
+function safeEscapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getPendingServicesList(client) {
+  let structuredItems = null;
+
+  if (Array.isArray(client.service_items) && client.service_items.length > 0) {
+    structuredItems = client.service_items;
+  } else {
+    const rawSpecs = String(client.service_specs || '');
+    const markerIndex = rawSpecs.lastIndexOf('\n\n[NASKLY_SERVICE_ITEMS]\n');
+    if (markerIndex !== -1) {
+      try {
+        const parsed = JSON.parse(rawSpecs.slice(markerIndex + 26).trim());
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          structuredItems = parsed;
+        }
+      } catch (e) {}
+    }
+  }
+
+  // If structured items exist, filter out any item marked as 'استلم'
+  if (structuredItems && structuredItems.length > 0) {
+    return structuredItems
+      .filter(item => item.delivery_status !== 'استلم')
+      .map(item => String(item.name || item.service || '').trim())
+      .filter(Boolean);
+  }
+
+  // Fallback for legacy records without structured service_items
+  if (client.delivery_status !== 'تم بالكامل') {
+    const rawType = String(client.service_type || '').trim();
+    if (rawType) {
+      return rawType.split(/[,،\n]+/).map(s => s.trim()).filter(Boolean);
+    }
+    return ['جميع الخدمات'];
+  }
+
+  return [];
 }
