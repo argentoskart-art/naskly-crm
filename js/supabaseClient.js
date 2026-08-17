@@ -232,13 +232,15 @@ function getPendingServicesList(client) {
     }
   }
 
-  // 2. Check client.service_specs for JSON marker
+  // 2. Check client.service_specs for JSON marker (flexible search for CRLF/LF)
   if (!structuredItems || structuredItems.length === 0) {
     const rawSpecs = String(client.service_specs || '');
-    const markerIndex = rawSpecs.lastIndexOf('\n\n[NASKLY_SERVICE_ITEMS]\n');
+    const marker = '[NASKLY_SERVICE_ITEMS]';
+    const markerIndex = rawSpecs.lastIndexOf(marker);
     if (markerIndex !== -1) {
       try {
-        const parsed = JSON.parse(rawSpecs.slice(markerIndex + 26).trim());
+        const jsonPart = rawSpecs.slice(markerIndex + marker.length).trim();
+        const parsed = JSON.parse(jsonPart);
         if (Array.isArray(parsed) && parsed.length > 0) {
           structuredItems = parsed;
         }

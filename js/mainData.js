@@ -83,14 +83,15 @@ function formatMoney(value) {
 
 function decodeLegacyServiceSpecs(rawValue) {
   const raw = String(rawValue || '');
-  const markerIndex = raw.lastIndexOf(SERVICE_ITEMS_MARKER);
+  const marker = '[NASKLY_SERVICE_ITEMS]';
+  const markerIndex = raw.lastIndexOf(marker);
 
   if (markerIndex === -1) {
     return { notes: raw, items: null };
   }
 
   const notes = raw.slice(0, markerIndex).trim();
-  const serializedItems = raw.slice(markerIndex + SERVICE_ITEMS_MARKER.length).trim();
+  const serializedItems = raw.slice(markerIndex + marker.length).trim();
 
   try {
     const parsedItems = JSON.parse(serializedItems);
